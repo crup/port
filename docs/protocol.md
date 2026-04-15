@@ -22,7 +22,7 @@ type PortMessage = {
 - Messages are ignored unless `protocol` and `version` match.
 - The host accepts messages only from the currently mounted iframe window.
 - The host ignores messages from any origin other than `allowedOrigin`.
-- The child ignores messages until it has observed a valid `port:hello`.
+- The child ignores messages until it has observed a valid `port:hello` from the configured `allowedOrigin`.
 - `instanceId` prevents sibling embeds from handling each other’s traffic.
 - `replyTo` ties responses and errors to a single outstanding request.
 
@@ -89,7 +89,12 @@ Child:
 
 ```ts
 child.on('request:demo:getQuote', (message) => {
-  const request = message as { messageId: string };
+ const request = message as { messageId: string };
+
+  if (!quoteEngineReady()) {
+    child.reject(request.messageId, 'Quote engine unavailable');
+    return;
+  }
 
   child.respond(request.messageId, {
     plan: 'Growth',

@@ -1,4 +1,5 @@
 import { Emitter } from './emitter';
+import { PortError } from './errors';
 import type { ChildPortConfig, EventHandler, PortMessage } from './types';
 import { isPortMessage, PROTOCOL, randomId, VERSION } from './utils';
 
@@ -7,15 +8,18 @@ export interface ChildPort {
   emit(type: string, payload?: unknown): void;
   on(type: string, handler: EventHandler): void;
   respond(messageId: string, payload: unknown): void;
+  reject(messageId: string, payload?: unknown): void;
   resize(height: number): void;
   destroy(): void;
 }
 
-export function createChildPort(config: ChildPortConfig = {}): ChildPort {
+export function createChildPort(config: ChildPortConfig): ChildPort {
+  validateChildConfig(config);
+
   const emitter = new Emitter();
   let instanceId: string | null = null;
   let hostWindow: Window | null = null;
-  let hostOrigin: string | null = config.allowedOrigin ?? null;
+  const hostOrigin = config.allowedOrigin;
 
   const listener = (event: MessageEvent): void => {
     if (!isPortMessage(event.data)) {
@@ -25,14 +29,12 @@ export function createChildPort(config: ChildPortConfig = {}): ChildPort {
     const message = event.data;
 
     if (message.kind === 'system' && message.type === 'port:hello') {
-      instanceId = message.instanceId;
-      hostWindow = event.source as Window;
-      hostOrigin = hostOrigin ?? event.origin;
-
       if (hostOrigin !== event.origin) {
         return;
       }
 
+      instanceId = message.instanceId;
+      hostWindow = event.source as Window;
       ready();
       return;
     }
@@ -90,6 +92,10 @@ export function createChildPort(config: ChildPortConfig = {}): ChildPort {
     post({ kind: 'response', type: 'port:response', payload, replyTo: messageId });
   }
 
+  function reject(messageId: string, payload: unknown = 'Rejected'): void {
+    post({ kind: 'error', type: 'port:error', payload, replyTo: messageId });
+  }
+
   function resize(height: number): void {
     if (!Number.isFinite(height) || height < 0) {
       return;
@@ -101,5 +107,20 @@ export function createChildPort(config: ChildPortConfig = {}): ChildPort {
     window.removeEventListener('message', listener);
   }
 
-  return { ready, emit, on, respond, resize, destroy };
+  return { ready, emit, on, respond, reject, resize, destroy };
+}
+
+function validateChildConfig(config: ChildPortConfig): void {
+  if (!config.allowedOrigin) {
+    throw new PortError('INVALID_CONFIG', 'allowedOrigin is required for child ports');
+  }
+
+  try {
+    const parsed = new URL(config.allowedOrigin);
+    if (parsed.origin !== config.allowedOrigin) {
+      throw new Error('Origin must not include a path');
+    }
+  } catch {
+    throw new PortError('INVALID_CONFIG', 'allowedOrigin must be an exact origin such as https://host.example.com');
+  }
 }

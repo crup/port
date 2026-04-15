@@ -22,7 +22,7 @@ Avoid vague names like:
 ## Rule Of Thumb
 
 - `send()` / `emit()` for fire-and-forget signals
-- `call()` / `respond()` for data the host is blocked on
+- `call()` / `respond()` / `reject()` for data the host is blocked on
 
 ## Host To Child Events
 
@@ -109,6 +109,11 @@ Child:
 child.on('request:demo:getQuote', (message) => {
   const request = message as { messageId: string };
 
+  if (!quoteEngineReady()) {
+    child.reject(request.messageId, 'Quote engine unavailable');
+    return;
+  }
+
   child.respond(request.messageId, {
     plan: 'Growth',
     price: 249,
@@ -147,12 +152,10 @@ Document your own contract in a table like this:
 
 ## Error Strategy
 
-You have two choices when child-side work fails:
+You have two good choices when child-side work fails:
 
-1. respond with a domain payload that includes failure details
-2. emit `kind: 'error'` so the host receives `MESSAGE_REJECTED`
-
-The current child runtime exposes `respond()` only, so if you need richer rejection semantics you can either send a failure-shaped success payload or extend the runtime for explicit error responses.
+1. `reject(messageId, payload)` when the host should take a true failure path
+2. `respond(messageId, payload)` with a domain-level failure shape when the host still treats it as a normal result
 
 ## Good Contract Habits
 

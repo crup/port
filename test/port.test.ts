@@ -69,9 +69,54 @@ describe('lifecycle', () => {
     });
 
     const first = port.mount();
+    await expect(port.mount()).rejects.toMatchObject({ code: 'INVALID_STATE' });
     (document.querySelector('iframe') as HTMLIFrameElement).dispatchEvent(new Event('load'));
     await expect(first).rejects.toBeInstanceOf(PortError);
-    await expect(port.mount()).rejects.toMatchObject({ code: 'INVALID_STATE' });
+  });
+
+  it('cleans up failed mounts and allows a retry', async () => {
+    const target = setupTarget();
+    const port = createPort({
+      url: 'https://child.example.com',
+      allowedOrigin: 'https://child.example.com',
+      target,
+      handshakeTimeoutMs: 10,
+      iframeLoadTimeoutMs: 20
+    });
+
+    const firstMount = port.mount();
+    const firstFrame = document.querySelector('iframe') as HTMLIFrameElement;
+    firstFrame.dispatchEvent(new Event('load'));
+
+    await expect(firstMount).rejects.toMatchObject({ code: 'HANDSHAKE_TIMEOUT' });
+    expect(port.getState()).toBe('idle');
+    expect(document.querySelector('iframe')).toBeNull();
+
+    const secondMount = port.mount();
+    const secondFrame = document.querySelector('iframe') as HTMLIFrameElement;
+    const childWindow = secondFrame.contentWindow as Window;
+
+    vi.spyOn(childWindow, 'postMessage').mockImplementation((data: unknown) => {
+      const hello = data as PortMessage;
+      if (hello.type === 'port:hello') {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            origin: 'https://child.example.com',
+            source: childWindow,
+            data: {
+              ...hello,
+              messageId: 'ready_retry',
+              kind: 'system',
+              type: 'port:ready'
+            }
+          })
+        );
+      }
+    });
+
+    secondFrame.dispatchEvent(new Event('load'));
+    await expect(secondMount).resolves.toBeUndefined();
+    expect(port.getState()).toBe('open');
   });
 });
 
@@ -223,6 +268,10 @@ describe('messaging and rpc', () => {
 });
 
 describe('child runtime', () => {
+  it('requires an explicit child allowedOrigin', () => {
+    expect(() => createChildPort({} as never)).toThrowError(PortError);
+  });
+
   it('routes host requests into request:* events only after hello', async () => {
     const child = createChildPort({ allowedOrigin: 'https://host.example.com' });
     const handler = vi.fn();
@@ -261,5 +310,69 @@ describe('child runtime', () => {
 
     await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
     child.destroy();
+  });
+
+  it('converts child reject() into a host MESSAGE_REJECTED error', async () => {
+    const target = setupTarget();
+    const port = createPort({
+      url: 'https://child.example.com',
+      allowedOrigin: 'https://child.example.com',
+      target,
+      handshakeTimeoutMs: 50,
+      iframeLoadTimeoutMs: 50,
+      callTimeoutMs: 50
+    });
+
+    const mounting = port.mount();
+    const iframe = document.querySelector('iframe') as HTMLIFrameElement;
+    const childWindow = iframe.contentWindow as Window;
+    const postMessage = vi.spyOn(childWindow, 'postMessage');
+
+    postMessage.mockImplementation((data: unknown) => {
+      const message = data as PortMessage;
+
+      if (message.type === 'port:hello') {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            origin: 'https://child.example.com',
+            source: childWindow,
+            data: {
+              ...message,
+              messageId: 'ready_reject',
+              kind: 'system',
+              type: 'port:ready'
+            }
+          })
+        );
+        return;
+      }
+
+      if (message.kind === 'request') {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            origin: 'https://child.example.com',
+            source: childWindow,
+            data: {
+              protocol: 'crup.port',
+              version: '1',
+              instanceId: message.instanceId,
+              messageId: 'err_1',
+              replyTo: message.messageId,
+              kind: 'error',
+              type: 'port:error',
+              payload: 'Quote unavailable'
+            }
+          })
+        );
+      }
+    });
+
+    iframe.dispatchEvent(new Event('load'));
+    await mounting;
+
+    await expect(port.call('demo:getQuote')).rejects.toMatchObject({
+      code: 'MESSAGE_REJECTED',
+      message: 'Quote unavailable'
+    });
   });
 });

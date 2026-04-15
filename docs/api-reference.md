@@ -62,6 +62,8 @@ Removes a previously registered handler.
 
 Mutates the in-memory config for future runtime behavior.
 
+Once the port has mounted, only timeout and sizing fields may change. `url`, `allowedOrigin`, `target`, and `mode` are fixed for the lifetime of the mounted session.
+
 #### `getState(): PortState`
 
 Returns the current runtime state.
@@ -85,7 +87,7 @@ Returns the current runtime state.
 import { createChildPort } from '@crup/port/child';
 ```
 
-### `createChildPort(config?)`
+### `createChildPort(config)`
 
 Creates the child-side runtime that listens for the host handshake and communicates back to the parent window.
 
@@ -93,7 +95,7 @@ Creates the child-side runtime that listens for the host handshake and communica
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `allowedOrigin` | `string` | No | Explicit parent origin. If omitted, the child adopts the origin from the first valid `port:hello`. |
+| `allowedOrigin` | `string` | Yes | Exact parent origin accepted for the handshake and all later messages. |
 
 ### Methods
 
@@ -113,6 +115,10 @@ Subscribes to host traffic. Requests are surfaced as `request:<type>`.
 
 Resolves a previous host request.
 
+#### `reject(messageId: string, payload?: unknown): void`
+
+Rejects a previous host request. The host receives a `PortError` with code `MESSAGE_REJECTED`.
+
 #### `resize(height: number): void`
 
 Sends `event / port:resize` if the height is finite and non-negative.
@@ -130,7 +136,7 @@ Removes the child-side message listener.
 | `IFRAME_LOAD_TIMEOUT` | The iframe never produced `load()` within the allowed time. |
 | `HANDSHAKE_TIMEOUT` | The child never responded with `port:ready`. |
 | `CALL_TIMEOUT` | A request did not resolve before `callTimeoutMs`. |
-| `ORIGIN_MISMATCH` | Reserved for origin failures in application-level handling. |
+| `ORIGIN_MISMATCH` | Reserved for application-level contract handling when your own code detects an origin mismatch case. |
 | `MESSAGE_REJECTED` | The child replied with `kind: 'error'`. |
 | `PORT_DESTROYED` | The port was destroyed while work was in flight. |
 

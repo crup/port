@@ -18,6 +18,9 @@ export class Emitter {
     if (!list) {
       return;
     }
-    await Promise.all([...list].map(async (handler) => handler(payload)));
+
+    for (const handler of list) {
+      await handler(payload);
+    }
   }
 }

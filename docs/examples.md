@@ -6,7 +6,7 @@ These examples stay intentionally small, but they map directly to the runtime AP
 
 - `examples/host-inline.ts`: mount an iframe inline and subscribe to child events
 - `examples/host-modal.ts`: mount a modal port and control open and close explicitly
-- `examples/child-basic.ts`: respond to host requests and emit resize signals
+- `examples/child-basic.ts`: respond to host requests, reject invalid requests, and emit resize signals
 
 ## Live Demo
 
@@ -40,3 +40,15 @@ export function sendHostContext(port: Port, payload: HostContext) {
 ```
 
 This keeps the rest of the application from repeating message names everywhere.
+
+On the child side, do the same for both success and failure paths:
+
+```ts
+export function replyWithQuote(child: ChildPort, messageId: string, quote: QuoteResponse) {
+  child.respond(messageId, quote);
+}
+
+export function rejectQuote(child: ChildPort, messageId: string, reason: string) {
+  child.reject(messageId, { reason });
+}
+```
