@@ -1,4 +1,7 @@
 node_modules
 coverage
 dist
+demo-dist
+.changeset/pre.json
+.DS_Store
 *.log

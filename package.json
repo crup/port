@@ -1,12 +1,32 @@
 {
   "name": "@crup/port",
   "version": "0.1.0",
-  "description": "Minimal protocol-first iframe runtime for host/child communication",
+  "description": "Protocol-first iframe runtime for explicit host/child communication",
+  "homepage": "https://crup.github.io/port/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crup/port.git"
+  },
+  "bugs": {
+    "url": "https://github.com/crup/port/issues"
+  },
+  "author": "CRUP contributors",
+  "keywords": [
+    "iframe",
+    "postmessage",
+    "embed",
+    "protocol",
+    "messaging",
+    "typescript",
+    "browser",
+    "runtime"
+  ],
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -18,20 +38,45 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "demo:dev": "vite --config vite.demo.config.ts --host",
+    "demo:build": "vite build --config vite.demo.config.ts",
+    "demo:preview": "vite preview --config vite.demo.config.ts",
+    "lint": "eslint .",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "test:coverage": "vitest run --coverage",
+    "size": "node scripts/size-report.mjs",
+    "size:json": "node scripts/size-report.mjs --json",
+    "changeset": "changeset",
+    "version-packages": "changeset version && npm install --package-lock-only",
+    "release": "changeset publish --provenance --access public",
+    "prepare": "husky",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "examples": "echo \"Open examples/ for host/child integration snippets\""
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^24.5.2",
+    "eslint": "^9.25.1",
+    "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "tsup": "^8.3.5",
     "typescript": "^5.6.3",
+    "typescript-eslint": "^8.31.1",
+    "vite": "^7.1.10",
     "vitest": "^2.1.8"
   },
   "engines": {

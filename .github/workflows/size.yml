@@ -1,0 +1,95 @@
+name: Size
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout head
+        uses: actions/checkout@v4
+        with:
+          path: head
+
+      - name: 2. Checkout main baseline
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: base
+
+      - name: 3. Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 4. Build head package
+        working-directory: head
+        run: |
+          npm ci
+          npm run build
+          npm run size:json > ../head-size.json
+
+      - name: 5. Build base package
+        working-directory: base
+        continue-on-error: true
+        run: |
+          npm ci
+          npm run build
+          npm run size:json > ../base-size.json
+
+      - name: 6. Compare sizes
+        id: compare
+        run: |
+          node --input-type=module <<'EOF' > size-summary.md
+          import { existsSync, readFileSync } from 'node:fs';
+
+          const read = (file) => JSON.parse(readFileSync(file, 'utf8'));
+          const head = read('head-size.json');
+
+          if (!existsSync('base-size.json')) {
+            console.log('Base branch does not have size data yet.');
+            console.log('');
+            console.log('```json');
+            console.log(JSON.stringify(head, null, 2));
+            console.log('```');
+            process.exit(0);
+          }
+
+          const base = read('base-size.json');
+          const rawDelta = head.totals.rawBytes - base.totals.rawBytes;
+          const gzipDelta = head.totals.gzipBytes - base.totals.gzipBytes;
+          const format = (value) => `${value >= 0 ? '+' : ''}${value} B`;
+
+          console.log('| Metric | Base | Head | Delta |');
+          console.log('| --- | ---: | ---: | ---: |');
+          console.log(`| Raw total | ${base.totals.rawBytes} | ${head.totals.rawBytes} | ${format(rawDelta)} |`);
+          console.log(`| Gzip total | ${base.totals.gzipBytes} | ${head.totals.gzipBytes} | ${format(gzipDelta)} |`);
+          EOF
+
+          cat size-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 7. Comment size report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const marker = '<!-- port-size-report -->';
+            const body = `${marker}\n## Bundle size report\n\n${fs.readFileSync('size-summary.md', 'utf8')}`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+            const existing = comments.data.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

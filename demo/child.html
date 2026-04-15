@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Port Child Demo</title>
+    <link rel="stylesheet" href="./child.css" />
+  </head>
+  <body>
+    <main class="child-shell">
+      <p class="child-eyebrow">Child Runtime</p>
+      <h1>Ready to handshake.</h1>
+      <p class="child-copy">
+        This page listens for `port:hello`, validates the host origin, responds to `system:ping`, and emits
+        telemetry ticks back to the host.
+      </p>
+
+      <dl class="child-metrics">
+        <div>
+          <dt>Origin</dt>
+          <dd id="child-origin">pending</dd>
+        </div>
+        <div>
+          <dt>Ticks</dt>
+          <dd id="child-ticks">0</dd>
+        </div>
+        <div>
+          <dt>Last Ping</dt>
+          <dd id="child-ping">none</dd>
+        </div>
+      </dl>
+
+      <div class="child-wave" aria-hidden="true"></div>
+    </main>
+
+    <script type="module" src="./child.ts"></script>
+  </body>
+</html>

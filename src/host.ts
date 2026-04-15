@@ -63,7 +63,7 @@ export function createPort(input: PortConfig): Port {
       return;
     }
 
-    const msg = event.data as PortMessage;
+    const msg = event.data;
     if (msg.instanceId !== instanceId) {
       return;
     }
@@ -93,7 +93,8 @@ export function createPort(input: PortConfig): Port {
       }
       clearTimeout(call.timeout);
       pending.delete(msg.replyTo);
-      call.reject(new PortError('MESSAGE_REJECTED', String(msg.payload ?? 'Rejected')));
+      const reason = typeof msg.payload === 'string' ? msg.payload : 'Rejected';
+      call.reject(new PortError('MESSAGE_REJECTED', reason));
       return;
     }
 
@@ -222,25 +223,27 @@ export function createPort(input: PortConfig): Port {
     }
   }
 
-  async function open(): Promise<void> {
+  function open(): Promise<void> {
     ensureState(['ready', 'closed'], 'open');
     if (config.mode !== 'modal') {
       state = 'open';
-      return;
+      return Promise.resolve();
     }
     if (!modalRoot) {
       throw new PortError('INVALID_STATE', 'modal root missing');
     }
     modalRoot.style.display = 'flex';
     state = 'open';
+    return Promise.resolve();
   }
 
-  async function close(): Promise<void> {
+  function close(): Promise<void> {
     ensureState(['open'], 'close');
     if (config.mode === 'modal' && modalRoot) {
       modalRoot.style.display = 'none';
     }
     state = 'closed';
+    return Promise.resolve();
   }
 
   function destroy(): void {

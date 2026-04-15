@@ -1,23 +1,73 @@
 name: CI
 
 on:
+  pull_request:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 1. Checkout source
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node 24
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-      - run: npm install
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
+
+      - name: 3. Install dependencies
+        id: install
+        run: npm ci
+
+      - name: 4. Lint
+        id: lint
+        run: npm run lint
+
+      - name: 5. Typecheck
+        id: typecheck
+        run: npm run typecheck
+
+      - name: 6. Test
+        id: test
+        run: npm test
+
+      - name: 7. Build package
+        id: build
+        run: npm run build
+
+      - name: 8. Build demo
+        id: demo
+        run: npm run demo:build
+
+      - name: 9. Check bundle size
+        id: size
+        run: npm run size
+
+      - name: 10. Pack dry run
+        id: pack
+        run: npm pack --dry-run
+
+      - name: CI summary
+        if: always()
+        run: |
+          {
+            echo "## CI pipeline"
+            echo
+            echo "| Stage | Result |"
+            echo "| --- | --- |"
+            echo "| Install | ${{ steps.install.outcome }} |"
+            echo "| Lint | ${{ steps.lint.outcome }} |"
+            echo "| Typecheck | ${{ steps.typecheck.outcome }} |"
+            echo "| Tests | ${{ steps.test.outcome }} |"
+            echo "| Package build | ${{ steps.build.outcome }} |"
+            echo "| Demo build | ${{ steps.demo.outcome }} |"
+            echo "| Bundle size | ${{ steps.size.outcome }} |"
+            echo "| Pack dry run | ${{ steps.pack.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
