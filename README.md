@@ -168,27 +168,27 @@ type PortMessage = {
 ## Local Development
 
 ```bash
-npm install
-npm run lint
-npm run typecheck
-npm test
-npm run build
-npm run demo:dev
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm demo:dev
 ```
 
 Useful scripts:
 
-- `npm run demo:build` builds the GitHub Pages site into `demo-dist/`
-- `npm run size` reports raw and gzip bundle sizes for `dist/`
-- `npm run changeset` adds a release note entry for package changes
-- `npm run release` publishes versions prepared by Changesets
+- `pnpm docs:build` builds the GitHub Pages site into `demo-dist/`
+- `pnpm size` reports raw and gzip bundle sizes for `dist/`
+- `pnpm changeset` adds a release note entry when you want to track pending package notes
+- `pnpm readme:check` validates the README install and package links
 
 ## Release Model
 
-- `ci.yml` validates lint, types, tests, bundle output, demo build, and package packing.
+- `ci.yml` validates lint, types, tests, package build, demo build, README checks, size output, and package packing.
 - `docs.yml` deploys the Vite demo to GitHub Pages at `https://crup.github.io/port/`.
-- `release.yml` uses Changesets to open or update a release PR on `main`, then publishes to npm when release changes are merged.
-- `prerelease.yml` publishes a manual prerelease build to npm with the `next` dist-tag.
+- `release.yml` is a guarded manual stable release workflow modeled on `crup/react-timer-hook`.
+- `prerelease.yml` publishes a manual alpha prerelease from the `next` branch.
 
 ## Security
 

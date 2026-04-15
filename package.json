@@ -53,14 +53,17 @@
     "demo:dev": "vite --config vite.demo.config.ts --host",
     "demo:build": "vite build --config vite.demo.config.ts",
     "demo:preview": "vite preview --config vite.demo.config.ts",
+    "docs:dev": "pnpm demo:dev",
+    "docs:build": "pnpm demo:build",
+    "docs:preview": "pnpm demo:preview",
     "lint": "eslint .",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "test:coverage": "vitest run --coverage",
+    "readme:check": "node scripts/check-readme.mjs",
     "size": "node scripts/size-report.mjs",
     "size:json": "node scripts/size-report.mjs --json",
     "changeset": "changeset",
-    "version-packages": "changeset version && npm install --package-lock-only",
-    "release": "changeset publish --provenance --access public",
+    "release": "changeset publish",
     "prepare": "husky",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -70,6 +73,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "packageManager": "pnpm@10.30.2",
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@eslint/js": "^9.25.1",
@@ -85,6 +89,6 @@
     "vitest": "^2.1.8"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=18.0.0"
   }
 }

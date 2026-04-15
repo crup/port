@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -16,43 +19,52 @@ jobs:
       - name: 1. Checkout source
         uses: actions/checkout@v4
 
-      - name: 2. Setup Node 24
+      - name: 2. Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
+
+      - name: 3. Setup Node 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - name: 3. Install dependencies
+      - name: 4. Install dependencies
         id: install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: 4. Lint
+      - name: 5. Lint
         id: lint
-        run: npm run lint
+        run: pnpm lint
 
-      - name: 5. Typecheck
+      - name: 6. Typecheck library
         id: typecheck
-        run: npm run typecheck
+        run: pnpm typecheck
 
-      - name: 6. Test
+      - name: 7. Run tests
         id: test
-        run: npm test
+        run: pnpm test
 
-      - name: 7. Build package
+      - name: 8. Build package
         id: build
-        run: npm run build
+        run: pnpm build
 
-      - name: 8. Build demo
-        id: demo
-        run: npm run demo:build
+      - name: 9. Build docs site
+        id: docs
+        run: pnpm docs:build
 
-      - name: 9. Check bundle size
+      - name: 10. Check README
+        id: readme
+        run: pnpm readme:check
+
+      - name: 11. Check bundle size
         id: size
-        run: npm run size
+        run: pnpm size
 
-      - name: 10. Pack dry run
+      - name: 12. Pack dry run
         id: pack
-        run: npm pack --dry-run
+        run: pnpm pack --dry-run
 
       - name: CI summary
         if: always()
@@ -67,7 +79,8 @@ jobs:
             echo "| Typecheck | ${{ steps.typecheck.outcome }} |"
             echo "| Tests | ${{ steps.test.outcome }} |"
             echo "| Package build | ${{ steps.build.outcome }} |"
-            echo "| Demo build | ${{ steps.demo.outcome }} |"
-            echo "| Bundle size | ${{ steps.size.outcome }} |"
+            echo "| Docs build | ${{ steps.docs.outcome }} |"
+            echo "| README check | ${{ steps.readme.outcome }} |"
+            echo "| Size report | ${{ steps.size.outcome }} |"
             echo "| Pack dry run | ${{ steps.pack.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"

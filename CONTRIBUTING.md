@@ -5,13 +5,13 @@ Thanks for contributing. Keep changes small, explicit, and easy to verify.
 ## Local Setup
 
 ```bash
-npm install
-npm run lint
-npm run typecheck
-npm test
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
 ```
 
-Node `24` is the supported development runtime for this repository.
+Node `18` is the minimum supported development runtime for this repository. The CI and release workflows run on newer Node for tooling, but the package engine target is Node 18+.
 
 ## Repo Structure
 
@@ -34,14 +34,14 @@ Node `24` is the supported development runtime for this repository.
 Run:
 
 ```bash
-npm run check
-npm run demo:build
+pnpm check
+pnpm docs:build
 ```
 
 If the change affects a published artifact, add a Changeset:
 
 ```bash
-npm run changeset
+pnpm changeset
 ```
 
 ## Pull Request Guidelines
