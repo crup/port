@@ -74,6 +74,10 @@
                 <dt>Child Events</dt>
                 <dd id="event-count">00</dd>
               </div>
+              <div>
+                <dt>Iframe Height</dt>
+                <dd id="height-value">pending</dd>
+              </div>
             </dl>
           </div>
 
@@ -121,8 +125,8 @@ port.send('demo:hostContext', {
             <h2>Inspect the host, the child, and the message flow in one place.</h2>
             <p>
               The controls below drive a real iframe session. Mount creates the session, ping exercises
-              request-response, quote asks the child for domain data, and context pushes a host-side event
-              into the embedded app.
+              request-response, quote asks the child for domain data, context pushes a host-side event
+              into the embedded app, and the child resize lab expands the iframe on demand.
             </p>
           </div>
 
@@ -154,6 +158,10 @@ port.send('demo:hostContext', {
                 <div>
                   <span>Child Event</span>
                   <strong>`emit('demo:planChanged')`</strong>
+                </div>
+                <div>
+                  <span>Resize</span>
+                  <strong>`resize(document.documentElement.scrollHeight)`</strong>
                 </div>
               </div>
               <div class="log-strip">
@@ -278,6 +286,11 @@ port.send('demo:hostContext', {
               <h3>Modal Surface</h3>
               <p>Keep the iframe mounted but hidden until the user opens the experience deliberately.</p>
               <a href="https://github.com/crup/port/blob/main/examples/host-modal.ts">Open example</a>
+            </article>
+            <article>
+              <h3>Resize Contract</h3>
+              <p>Expand the child resize lab to watch the iframe height update from an explicit `resize()` message.</p>
+              <a href="https://github.com/crup/port/blob/main/docs/getting-started.md">Read guide</a>
             </article>
             <article>
               <h3>Child Responder</h3>

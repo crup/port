@@ -23,6 +23,23 @@ Use inline mode for dashboards, settings panels, or embedded tools that should f
 
 Use modal mode for contained flows like checkout, onboarding, or editor tools that deserve a focused frame.
 
+### Explicit Resize Surface
+
+Use explicit resize messages when the child height changes because of tabs, accordions, async content, or progressive disclosure.
+
+```ts
+function syncHeight(child: ChildPort) {
+  child.resize(document.documentElement.scrollHeight);
+}
+
+document.querySelector('#details-toggle')?.addEventListener('click', () => {
+  document.body.classList.toggle('details-open');
+  syncHeight(child);
+});
+```
+
+This keeps responsibility clear: the child owns its content height, and the host only applies the bounded iframe size it receives.
+
 ### Contract Wrapper
 
 For production apps, wrap the generic runtime with domain helpers:

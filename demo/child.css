@@ -220,6 +220,10 @@ h2 {
   margin-top: 18px;
 }
 
+.resize-lab {
+  margin-top: 24px;
+}
+
 .detail-card {
   padding: 20px;
 }
@@ -256,6 +260,84 @@ h2 {
   background: rgba(255, 255, 255, 0.54);
 }
 
+.resize-card {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 252, 247, 0.88);
+  box-shadow: var(--panel-shadow);
+}
+
+.resize-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.resize-copy span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.resize-copy strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.resize-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid rgba(20, 32, 38, 0.12);
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff7ef;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+.resize-button:hover,
+.resize-button:focus-visible {
+  transform: translateY(-1px);
+  background: #0f1c22;
+  outline: 3px solid rgba(37, 107, 116, 0.24);
+  outline-offset: 3px;
+}
+
+.resize-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px dashed rgba(20, 32, 38, 0.18);
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+.resize-panel p {
+  margin: 0;
+}
+
+.resize-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -277,6 +359,11 @@ h2 {
   }
 
   .child-header {
+    flex-direction: column;
+  }
+
+  .resize-copy {
+    align-items: flex-start;
     flex-direction: column;
   }
 }

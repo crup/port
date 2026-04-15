@@ -185,6 +185,23 @@ type PortMessage = {
 
 That scope is what keeps the package small and predictable.
 
+## Why Not Penpal, Zoid, Or Postmate?
+
+Those libraries solve adjacent problems, but with a broader or different abstraction:
+
+- [Penpal](https://github.com/Aaronius/penpal) is strong when you want promise-based remote method calls across iframes, windows, and workers.
+- [Zoid](https://github.com/krakenjs/zoid) is strong when you want full cross-domain components with props, callbacks, and framework-facing integration patterns.
+- [Postmate](https://github.com/dollarshaveclub/postmate) is strong when you want a small promise-based parent/child model API over `postMessage`.
+
+`@crup/port` exists for a narrower use case:
+
+- explicit iframe lifecycle and handshake control
+- exact origin pinning on both sides
+- simple event plus request/response/error messaging
+- explicit child-driven resize instead of a larger component abstraction
+
+If you want a minimal protocol runtime rather than a remote method bridge or cross-domain component toolkit, that is the gap this package is targeting.
+
 ## Local Development
 
 ```bash
@@ -214,19 +231,6 @@ Useful scripts:
 
 This package helps enforce the runtime boundary, but it cannot secure a weak embed strategy on its own. Always pin `allowedOrigin`, set restrictive iframe attributes, and validate application-level payloads. The practical guidance lives in [`docs/security.md`](docs/security.md).
 
-## OSS Baseline
-
-This repo ships with:
-
-- MIT license
-- Code of conduct
-- Contributing guide
-- Security policy
-- Issue and PR templates
-- Husky hooks
-- Changesets
-- GitHub Actions for CI, Pages, size reporting, and releases
-
 ## License
 
-MIT, see [`LICENSE`](LICENSE).
+Released under the [MIT License](./LICENSE).

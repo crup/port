@@ -76,6 +76,37 @@
           <ol id="child-activity" class="activity-log" aria-live="polite"></ol>
         </article>
       </section>
+
+      <section class="resize-lab">
+        <div class="section-copy">
+          <p class="child-eyebrow">Resize demo</p>
+          <h2>Expand the child surface and watch the host iframe height update.</h2>
+        </div>
+
+        <article class="resize-card">
+          <div class="resize-copy">
+            <div>
+              <span>Surface mode</span>
+              <strong id="resize-state">compact</strong>
+            </div>
+            <button id="resize-toggle" class="resize-button" type="button" aria-expanded="false">
+              Expand resize content
+            </button>
+          </div>
+
+          <div id="resize-panel" class="resize-panel" hidden>
+            <p>
+              This panel deliberately changes the child document height. The child then calls
+              `resize(document.documentElement.scrollHeight)` so the host can clamp and apply the new iframe height.
+            </p>
+            <ul class="resize-list">
+              <li>Longer copy simulates async content, form expansion, or tabbed details.</li>
+              <li>The host does not inspect child DOM. It only trusts explicit resize messages.</li>
+              <li>The live lab shows the applied iframe height on the host side.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
     </main>
 
     <script type="module" src="./child.ts"></script>
