@@ -35,7 +35,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          npm run size:json > ../head-size.json
+          node scripts/size-report.mjs --json > ../head-size.json
 
       - name: 5. Build base package
         working-directory: base
@@ -43,7 +43,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          npm run size:json > ../base-size.json
+          node scripts/size-report.mjs --json > ../base-size.json
 
       - name: 6. Compare sizes
         id: compare
