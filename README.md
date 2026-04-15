@@ -1,111 +1,140 @@
 # @crup/port
 
-`@crup/port` exists because I got tired of rewriting iframe integrations that looked simple on paper and turned into brittle `postMessage` glue in production.
+[![npm version](https://img.shields.io/npm/v/%40crup%2Fport?color=1f8b4c)](https://www.npmjs.com/package/@crup/port)
+[![npm downloads](https://img.shields.io/npm/dm/%40crup%2Fport?color=0b7285)](https://www.npmjs.com/package/@crup/port)
+[![License](https://img.shields.io/github/license/crup/port?color=495057)](https://github.com/crup/port/blob/main/LICENSE)
+[![CI](https://github.com/crup/port/actions/workflows/ci.yml/badge.svg)](https://github.com/crup/port/actions/workflows/ci.yml)
+[![Docs](https://github.com/crup/port/actions/workflows/docs.yml/badge.svg)](https://github.com/crup/port/actions/workflows/docs.yml)
 
-Every time the pattern repeated:
+Protocol-first iframe runtime for explicit host/child communication.
 
-- create iframe
-- wait for load
-- hope handshake works
-- wire request/response manually
-- debug weird cross-origin timing issues at 2am
+`@crup/port` exists for the part of embedded app work that usually rots first: lifecycle, handshake timing, and message discipline. It gives the host page a small runtime for mounting an iframe, opening it inline or in a modal, enforcing origin checks, and exchanging request/response messages without ad hoc `postMessage` glue.
 
-This package is intentionally small and opinionated about one thing: **embedding remote apps safely with explicit lifecycle and protocol contracts**.
+Tags: `iframe` `postMessage` `embed` `protocol` `TypeScript` `runtime`
 
-## The problem this solves
+Package: https://www.npmjs.com/package/@crup/port
 
-### 1) Repeated iframe lifecycle code
-
-Most projects eventually need the same mount/open/close/destroy flow. Without a runtime, each implementation drifts and gets harder to maintain.
-
-### 2) Messy `postMessage` pipelines
-
-Raw browser messaging is low-level and easy to misuse. You can absolutely ship with it—but consistency and validation become your burden.
-
-### 3) No lifecycle guarantees
-
-You often need strong state transitions (`idle -> mounting -> mounted -> handshaking -> ready`). If those transitions are implicit, bugs become timing-dependent and expensive.
-
-### 4) Debugging pain
-
-When host and child disagree on message shapes or timing, failures become silent. This runtime keeps protocol semantics explicit.
-
-## Alternatives I explored
-
-All of these are good libraries. They just optimize for different goals than mine.
-
-- **Zoid**: powerful cross-domain component system, but heavier and more abstraction than I wanted for a tiny protocol runtime.
-- **Penpal**: excellent RPC ergonomics, but less focused on full iframe lifecycle + render orchestration.
-- **Postmate**: refreshingly simple and approachable, but I needed stricter state/lifecycle control.
-
-## Why this exists
-
-`@crup/port` is:
-
-- minimal
-- explicit
-- protocol-first
-- lifecycle-aware
-- UI-agnostic
-
-Host owns lifecycle. Child speaks protocol.
-
-## Design philosophy
-
-- tiny > feature-rich
-- explicit > magical
-- protocol > abstraction
-
-## What this is NOT
-
-- not a UI framework
-- not a product SDK
-- not a replacement for your app architecture
-
-If this library starts solving business logic instead of embed logic, it is bloatware.
+Live demo: https://crup.github.io/port/
 
 ## Install
 
 ```bash
-npm i @crup/port
+npm install @crup/port
 ```
 
-## Host API
+```bash
+pnpm add @crup/port
+```
+
+```bash
+yarn add @crup/port
+```
+
+Import the host runtime from `@crup/port` and the child runtime from `@crup/port/child`.
+
+## Quick Links
+
+- npm package: https://www.npmjs.com/package/@crup/port
+- live demo: https://crup.github.io/port/
+- source: https://github.com/crup/port
+- issues: https://github.com/crup/port/issues
+
+## Why This Package Exists
+
+- Raw `postMessage` is low-level and easy to drift across products.
+- Iframe lifecycle bugs usually hide in timing and cleanup paths.
+- Cross-window integrations need explicit origin pinning and state transitions.
+- Small embed runtimes should stay tiny, predictable, and framework-agnostic.
+
+## Quick Start
+
+### Host
 
 ```ts
 import { createPort } from '@crup/port';
 
 const port = createPort({
   url: 'https://example.com/embed',
-  target: '#root',
-  allowedOrigin: 'https://example.com'
+  allowedOrigin: 'https://example.com',
+  target: '#embed-root',
+  mode: 'inline',
+  minHeight: 360,
+  maxHeight: 720
 });
 
 await port.mount();
-port.on('action:done', (payload) => {
-  console.log(payload);
+
+port.on('widget:loaded', (payload) => {
+  console.log('child event', payload);
 });
 
-const result = await port.call('data:get', { id: '42' });
-console.log(result);
+const result = await port.call<{ ok: boolean }>('system:ping', {
+  requestedAt: Date.now()
+});
+
+console.log(result.ok);
 ```
 
-## Child API
+### Child
 
 ```ts
 import { createChildPort } from '@crup/port/child';
 
-const port = createChildPort();
-
-port.on('request:data:get', (message) => {
-  const msg = message as { messageId: string; payload: { id: string } };
-  port.respond(msg.messageId, { id: msg.payload.id, ok: true });
+const child = createChildPort({
+  allowedOrigin: 'https://host.example.com'
 });
 
-port.resize(720);
+child.on('request:system:ping', (message) => {
+  const request = message as { messageId: string; payload?: unknown };
+
+  child.respond(request.messageId, {
+    ok: true,
+    receivedAt: Date.now()
+  });
+});
+
+child.emit('widget:loaded', { version: '1' });
+child.resize(document.body.scrollHeight);
 ```
 
-## Protocol
+## What You Get
+
+- Explicit lifecycle: `idle -> mounting -> mounted -> handshaking -> ready -> open -> closed -> destroyed`
+- Strict origin pinning on both host and child
+- Inline and modal host modes
+- Event emission plus request/response RPC
+- Child-driven height updates
+- Small ESM-first bundle built with `tsup`
+
+## API Surface
+
+### `createPort(config)`
+
+Host runtime with:
+
+- `mount()`
+- `open()`
+- `close()`
+- `destroy()`
+- `send(type, payload?)`
+- `call<T>(type, payload?)`
+- `on(type, handler)`
+- `off(type, handler)`
+- `update(partialConfig)`
+- `getState()`
+
+### `createChildPort(config?)`
+
+Child runtime with:
+
+- `ready()`
+- `emit(type, payload?)`
+- `on(type, handler)`
+- `respond(messageId, payload)`
+- `resize(height)`
+- `destroy()`
+
+### Message Shape
 
 ```ts
 type PortMessage = {
@@ -120,46 +149,64 @@ type PortMessage = {
 };
 ```
 
-## Lifecycle
+## Demo And Examples
 
-`idle -> mounting -> mounted -> handshaking -> ready -> open -> closed -> destroyed`
+- Live GitHub Pages demo: https://crup.github.io/port/
+- Inline example: [`examples/host-inline.ts`](examples/host-inline.ts)
+- Modal example: [`examples/host-modal.ts`](examples/host-modal.ts)
+- Child example: [`examples/child-basic.ts`](examples/child-basic.ts)
+- Example overview: [`examples/README.md`](examples/README.md)
 
-## Multiple hosts / multiple ports
+## Documentation
 
-Yes—multiple host instances are supported in the same page. Each port instance has a unique `instanceId`, and host-side message routing now validates both `instanceId` and the exact `iframe.contentWindow` source so sibling ports cannot cross-handle each other’s messages.
+- Getting started: [`docs/getting-started.md`](docs/getting-started.md)
+- Protocol notes: [`docs/protocol.md`](docs/protocol.md)
+- Security guidance: [`docs/security.md`](docs/security.md)
+- Release process: [`docs/releasing.md`](docs/releasing.md)
+- Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
-## Local examples
+## Local Development
 
-Quick snippets are provided in:
+```bash
+npm install
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run demo:dev
+```
 
-- `examples/host-inline.ts`
-- `examples/host-modal.ts`
-- `examples/child-basic.ts`
+Useful scripts:
 
-## Staff/principal engineer recommendations (what is still missing)
+- `npm run demo:build` builds the GitHub Pages site into `demo-dist/`
+- `npm run size` reports raw and gzip bundle sizes for `dist/`
+- `npm run changeset` adds a release note entry for package changes
+- `npm run release` publishes versions prepared by Changesets
 
-Before production rollout, I recommend adding:
+## Release Model
 
-1. **Schema validation for payloads** at app boundaries (runtime guardrails for request/response contracts).
-2. **Observability hooks** (`onStateChange`, debug logger, correlation IDs exported for tracing).
-3. **Host capability negotiation** during handshake (versioning and optional features).
-4. **Security hardening** docs: CSP recommendations, sandbox iframe attributes, strict origin pinning guidance.
-5. **E2E browser tests** (Playwright/Cypress) to complement jsdom tests, especially for modal + ESC/backdrop behavior.
-6. **Release automation** (changesets/semantic-release) and size budget checks to enforce the `<8KB` target.
+- `ci.yml` validates lint, types, tests, bundle output, demo build, and package packing.
+- `docs.yml` deploys the Vite demo to GitHub Pages at `https://crup.github.io/port/`.
+- `release.yml` uses Changesets to open or update a release PR on `main`, then publishes to npm when release changes are merged.
+- `prerelease.yml` publishes a manual prerelease build to npm with the `next` dist-tag.
 
-## Error codes
+## Security
 
-- `INVALID_CONFIG`
-- `INVALID_STATE`
-- `IFRAME_LOAD_TIMEOUT`
-- `HANDSHAKE_TIMEOUT`
-- `CALL_TIMEOUT`
-- `ORIGIN_MISMATCH`
-- `MESSAGE_REJECTED`
-- `PORT_DESTROYED`
+This package helps with origin checks, but it cannot secure a weak embed strategy on its own. Always pin `allowedOrigin`, set restrictive iframe attributes, and validate application-level payloads. The practical guidance lives in [`docs/security.md`](docs/security.md).
 
-## Build outputs
+## OSS Baseline
 
-- `dist/index.mjs`
-- `dist/index.global.js`
-- `dist/child.mjs`
+This repo ships with:
+
+- MIT license
+- Code of conduct
+- Contributing guide
+- Security policy
+- Issue and PR templates
+- Husky hooks
+- Changesets
+- GitHub Actions for CI, Pages, size reporting, and releases
+
+## License
+
+MIT, see [`LICENSE`](LICENSE).

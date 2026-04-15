@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --bg: #06111a;
+  --panel: #0d1f2e;
+  --line: rgba(148, 204, 255, 0.16);
+  --text: #f6fbff;
+  --muted: rgba(230, 241, 248, 0.72);
+  --accent: #91f2cc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(145, 242, 204, 0.16), transparent 28%),
+    linear-gradient(180deg, #091520 0%, #06111a 100%);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.child-shell {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.child-eyebrow,
+.child-metrics dt {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.child-eyebrow {
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-size: 0.82rem;
+}
+
+h1 {
+  margin: 0;
+  max-width: 10ch;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.child-copy {
+  max-width: 44ch;
+  margin: 16px 0 24px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.child-metrics {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.child-metrics div {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.child-metrics dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.child-metrics dd {
+  margin: 8px 0 0;
+  font-size: 1rem;
+}
+
+.child-wave {
+  position: absolute;
+  right: -10%;
+  bottom: -18%;
+  width: 340px;
+  height: 340px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(145, 242, 204, 0.42), transparent 52%),
+    radial-gradient(circle, rgba(145, 204, 255, 0.18), transparent 64%);
+  filter: blur(8px);
+  animation: drift 8s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(-10px, -18px, 0) scale(1.04);
+  }
+}

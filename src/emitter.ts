@@ -18,6 +18,6 @@ export class Emitter {
     if (!list) {
       return;
     }
-    await Promise.all([...list].map((handler) => handler(payload)));
+    await Promise.all([...list].map(async (handler) => handler(payload)));
   }
 }

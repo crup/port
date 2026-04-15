@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Port Demo</title>
+    <meta
+      name="description"
+      content="Live GitHub Pages demo for @crup/port, a protocol-first iframe runtime for explicit host and child communication."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="#top">Port</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="#live-demo">Demo</a>
+          <a href="#protocol">Protocol</a>
+          <a href="https://github.com/crup/port">GitHub</a>
+        </nav>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy" data-reveal>
+            <p class="eyebrow">Protocol-first iframe runtime</p>
+            <h1>Embed remote apps without hand-rolled message glue.</h1>
+            <p class="lede">
+              `@crup/port` gives the host lifecycle control, origin checks, request-response semantics,
+              and child-driven resize signals in a package small enough to stay out of the way.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#live-demo">See The Live Handshake</a>
+              <a class="button button-secondary" href="https://github.com/crup/port">Read The Source</a>
+            </div>
+            <div class="status-strip" aria-label="Runtime status">
+              <div>
+                <span>State</span>
+                <strong id="state-value">idle</strong>
+              </div>
+              <div>
+                <span>Origin</span>
+                <strong id="origin-value">pending</strong>
+              </div>
+              <div>
+                <span>Last RPC</span>
+                <strong id="rpc-value">none</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual" data-reveal>
+            <div class="visual-noise"></div>
+            <div class="visual-frame">
+              <div class="frame-topline">
+                <span>host</span>
+                <span>crup.port / v1</span>
+              </div>
+              <div id="demo-root" class="demo-mount" aria-label="Live iframe demo"></div>
+              <div class="log-strip">
+                <p>Live event stream</p>
+                <ol id="event-log"></ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="live-demo" class="section" data-reveal>
+          <div class="section-head">
+            <p class="eyebrow">Live Demo</p>
+            <h2>One host, one child, one explicit protocol.</h2>
+          </div>
+          <div class="section-body prose-grid">
+            <div>
+              <p>
+                The host page mounts an iframe, waits for `load`, sends `port:hello`, and only then opens the
+                session for requests and events. The child accepts messages only after it sees a matching
+                origin and instance id.
+              </p>
+            </div>
+            <div>
+              <pre><code>const port = createPort({
+  url: childUrl,
+  allowedOrigin: window.location.origin,
+  target: '#demo-root',
+  mode: 'inline'
+});
+
+await port.mount();
+await port.call('system:ping');</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section id="protocol" class="section section-dark" data-reveal>
+          <div class="section-head">
+            <p class="eyebrow">Protocol</p>
+            <h2>The envelope stays small. The guarantees stay strict.</h2>
+          </div>
+          <div class="protocol-lines">
+            <div>
+              <span>1</span>
+              <p>`protocol` and `version` are validated before any routing happens.</p>
+            </div>
+            <div>
+              <span>2</span>
+              <p>Host messages are pinned to the mounted iframe window and the expected origin.</p>
+            </div>
+            <div>
+              <span>3</span>
+              <p>`instanceId` prevents sibling embeds from cross-handling each other.</p>
+            </div>
+            <div>
+              <span>4</span>
+              <p>Requests resolve through `replyTo` instead of ad hoc event naming.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" data-reveal>
+          <div class="section-head">
+            <p class="eyebrow">OSS Surface</p>
+            <h2>Built like a public package, not a private snippet.</h2>
+          </div>
+          <div class="section-body rails">
+            <div>
+              <h3>Docs</h3>
+              <p>README, security guidance, release notes, protocol notes, and local example references.</p>
+            </div>
+            <div>
+              <h3>Tooling</h3>
+              <p>Changesets, Husky, ESLint, bundle size reporting, and GitHub Actions for CI and Pages.</p>
+            </div>
+            <div>
+              <h3>Community</h3>
+              <p>Contributing guide, code of conduct, support path, issue templates, and PR template.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section final-cta" data-reveal>
+          <p class="eyebrow">Next Step</p>
+          <h2>Ship the embed contract. Keep the app logic outside the runtime.</h2>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/crup/port">Open GitHub</a>
+            <a class="button button-secondary" href="https://github.com/crup/port/blob/main/README.md">Read The README</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
