@@ -6,6 +6,7 @@
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "strict": true,
     "declaration": true,
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,

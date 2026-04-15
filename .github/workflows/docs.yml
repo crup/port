@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 1. Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 2. Setup pnpm
         uses: pnpm/action-setup@v4
@@ -34,7 +34,7 @@ jobs:
           version: 10.30.2
 
       - name: 3. Setup Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: pnpm
@@ -52,17 +52,17 @@ jobs:
 
       - name: 7. Configure GitHub Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: 8. Upload Pages artifact
         id: artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: demo-dist
 
       - name: 9. Deploy GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       - name: Docs summary
         if: always()
