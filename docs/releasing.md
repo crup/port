@@ -5,15 +5,16 @@ This repository now has a release flow similar in shape to `crup/react-timer-hoo
 ## Daily Development
 
 1. Add code changes.
-2. Run `npm run check`.
-3. Add a Changeset with `npm run changeset`.
+2. Run `pnpm check`.
+3. Add a Changeset with `pnpm changeset` when you want to keep pending release notes.
 4. Open a pull request.
 
 ## Stable Releases
 
-- `release.yml` runs on pushes to `main`.
-- If release notes are pending, Changesets opens or updates a release PR.
-- When a release PR is merged, the same workflow publishes the package to npm.
+- `release.yml` is a manual workflow dispatch from `main`.
+- It uses a guarded release gate, a separate verify job, and a dedicated publish job.
+- `NPM_TOKEN` is passed directly to the publish step via `NODE_AUTH_TOKEN` and `NPM_TOKEN`.
+- After publish, the workflow creates a GitHub release tag and release notes.
 
 Required secrets:
 
@@ -26,7 +27,7 @@ Required repository settings:
 
 ## Prereleases
 
-`prerelease.yml` is a manual workflow for publishing a prerelease build under the `next` dist-tag.
+`prerelease.yml` is a manual workflow for publishing an alpha build from the `next` branch.
 
 Use it when you want to validate a release candidate without moving npm `latest`.
 
@@ -37,7 +38,7 @@ Use it when you want to validate a release candidate without moving npm `latest`
 
 ## Bundle Size Reporting
 
-- `npm run size` prints a human-readable size table
-- `npm run size:json` emits JSON for the size workflow
+- `pnpm size` prints a human-readable size table
+- `pnpm size:json` emits JSON for the size workflow
 
 The PR size workflow compares the built bundle on the branch against `main` and comments the delta on pull requests.
