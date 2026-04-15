@@ -8,29 +8,74 @@
   </head>
   <body>
     <main class="child-shell">
-      <p class="child-eyebrow">Child Runtime</p>
-      <h1>Ready to handshake.</h1>
-      <p class="child-copy">
-        This page listens for `port:hello`, validates the host origin, responds to `system:ping`, and emits
-        telemetry ticks back to the host.
-      </p>
+      <header class="child-header">
+        <div>
+          <p class="child-eyebrow">Embedded child app</p>
+          <h1>Pricing widget with a documented message contract.</h1>
+        </div>
+        <div class="connection-pill">
+          <span class="connection-dot"></span>
+          <strong>Connected</strong>
+        </div>
+      </header>
 
-      <dl class="child-metrics">
+      <section class="child-summary">
         <div>
-          <dt>Origin</dt>
-          <dd id="child-origin">pending</dd>
+          <span>Host Origin</span>
+          <strong id="child-origin">pending</strong>
         </div>
         <div>
-          <dt>Ticks</dt>
-          <dd id="child-ticks">0</dd>
+          <span>Workspace</span>
+          <strong id="child-workspace">waiting for host</strong>
         </div>
         <div>
-          <dt>Last Ping</dt>
-          <dd id="child-ping">none</dd>
+          <span>Last Ping</span>
+          <strong id="child-ping">none</strong>
         </div>
-      </dl>
+        <div>
+          <span>Heartbeat</span>
+          <strong id="child-ticks">0</strong>
+        </div>
+      </section>
 
-      <div class="child-wave" aria-hidden="true"></div>
+      <section class="plan-chooser">
+        <div class="section-copy">
+          <p class="child-eyebrow">Plan selection</p>
+          <h2>Pick a plan and the host will see a domain event immediately.</h2>
+        </div>
+
+        <div class="plan-grid">
+          <button class="plan-card is-active" type="button" data-plan-button="starter">
+            <span>Starter</span>
+            <strong>USD 79/mo</strong>
+            <small>For narrow embed surfaces and simple flows.</small>
+          </button>
+          <button class="plan-card" type="button" data-plan-button="growth">
+            <span>Growth</span>
+            <strong>USD 249/mo</strong>
+            <small>For product teams that need events and RPC together.</small>
+          </button>
+          <button class="plan-card" type="button" data-plan-button="scale">
+            <span>Scale</span>
+            <strong>USD 799/mo</strong>
+            <small>For multi-surface embeds with stronger operational guarantees.</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="detail-grid">
+        <article class="detail-card">
+          <p class="child-eyebrow">Current quote</p>
+          <h3 id="child-plan">Growth</h3>
+          <p id="child-price" class="price-copy">USD 249/mo</p>
+          <p id="child-focus" class="support-copy">Focus area: Host context has not been sent yet.</p>
+        </article>
+
+        <article class="detail-card">
+          <p class="child-eyebrow">Child activity</p>
+          <ol id="child-activity" class="activity-log" aria-live="polite"></ol>
+        </article>
+      </section>
     </main>
 
     <script type="module" src="./child.ts"></script>

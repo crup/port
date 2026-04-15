@@ -1,10 +1,22 @@
 # Getting Started
 
+`@crup/port` is a browser runtime for host and child iframe communication. The host owns iframe creation, lifecycle, and request correlation. The child owns readiness, event emission, and responding to requests.
+
 ## Install
 
 ```bash
 npm install @crup/port
 ```
+
+```bash
+pnpm add @crup/port
+```
+
+```bash
+yarn add @crup/port
+```
+
+Import the host runtime from `@crup/port` and the child runtime from `@crup/port/child`.
 
 ## Host Setup
 
@@ -15,16 +27,18 @@ const port = createPort({
   url: 'https://example.com/embed',
   allowedOrigin: 'https://example.com',
   target: '#embed-root',
-  mode: 'inline'
+  mode: 'inline',
+  minHeight: 360,
+  maxHeight: 720
 });
 
 await port.mount();
 ```
 
-Host config is intentionally small:
+Host config stays intentionally small:
 
 - `url`: iframe source URL
-- `allowedOrigin`: exact origin accepted for inbound and outbound messages
+- `allowedOrigin`: exact origin accepted for both inbound and outbound messages
 - `target`: container element or selector
 - `mode`: `'inline'` or `'modal'`
 - `handshakeTimeoutMs`, `callTimeoutMs`, `iframeLoadTimeoutMs`
@@ -38,38 +52,135 @@ import { createChildPort } from '@crup/port/child';
 const child = createChildPort({
   allowedOrigin: 'https://host.example.com'
 });
+```
 
-child.on('request:data:get', (message) => {
-  const request = message as { messageId: string; payload: { id: string } };
+The child stays idle until it receives a valid `port:hello` message. Once origin validation succeeds, it replies with `port:ready` automatically.
+
+## First Working Flow
+
+### 1. Mount the iframe
+
+```ts
+await port.mount();
+```
+
+`mount()` creates the iframe, waits for the native `load` event, starts the handshake, and resolves when the session is ready. In inline mode the runtime moves directly to `open`.
+
+### 2. Listen for child events
+
+```ts
+port.on('widget:loaded', (payload) => {
+  console.log('child loaded', payload);
+});
+
+port.on('demo:planChanged', (payload) => {
+  console.log('plan changed', payload);
+});
+```
+
+Use events for one-way information: telemetry, page changes, user actions, and status acknowledgements.
+
+### 3. Request data when the host needs an answer
+
+```ts
+const quote = await port.call<{
+  plan: string;
+  price: number;
+  currency: string;
+}>('demo:getQuote', {
+  requestedAt: new Date().toISOString()
+});
+```
+
+`call()` is for decision points where the host must wait for a specific result.
+
+### 4. Handle requests inside the child
+
+```ts
+child.on('request:demo:getQuote', (message) => {
+  const request = message as { messageId: string };
 
   child.respond(request.messageId, {
-    id: request.payload.id,
-    status: 'ok'
+    plan: 'Growth',
+    price: 249,
+    currency: 'USD'
   });
 });
 ```
 
-The child automatically responds to the host handshake after `port:hello` is received from the correct origin.
+### 5. Emit domain events from the child
 
-## Common Flow
+```ts
+child.emit('widget:loaded', {
+  version: '1',
+  surface: 'pricing-widget'
+});
 
-1. Host creates a port.
-2. Host mounts the iframe and waits for the `load` event.
-3. Host sends `port:hello`.
-4. Child validates origin and replies with `port:ready`.
-5. Host transitions to `ready` and then `open` for inline mode.
-6. Host and child exchange events or request/response messages.
+child.emit('demo:planChanged', {
+  plan: 'Growth',
+  price: 249,
+  currency: 'USD'
+});
+```
 
-## Inline Vs Modal
+### 6. Keep height in sync
 
-- `inline` renders directly into the target container and opens after handshake.
-- `modal` mounts hidden, then opens when `port.open()` is called.
+```ts
+child.resize(document.documentElement.scrollHeight);
+```
 
-Modal mode includes backdrop click and `Escape` handling out of the box.
+Call `resize()` whenever the embedded layout changes. The host clamps the received height between `minHeight` and `maxHeight`.
 
-## Recommended Next Steps
+## Modal Mode
 
-- Add schema validation at your app boundary.
-- Wrap `port.call()` usage with domain-specific helpers.
-- Export correlation IDs or add logging around message boundaries if you need auditability.
-- Add end-to-end browser tests for the embed flows your product depends on.
+Use modal mode when the iframe should stay mounted but hidden until a user action opens it.
+
+```ts
+const port = createPort({
+  url: 'https://example.com/checkout',
+  allowedOrigin: 'https://example.com',
+  target: '#modal-root',
+  mode: 'modal'
+});
+
+await port.mount();
+await port.open();
+```
+
+Modal mode includes:
+
+- hidden mount until `open()`
+- backdrop click to close
+- `Escape` handling while open
+
+## Cleanup
+
+Destroy the session when the host surface unmounts or the embed is no longer valid.
+
+```ts
+port.destroy();
+```
+
+Destroying the port:
+
+- removes the iframe
+- clears pending RPC requests
+- rejects outstanding calls with `PORT_DESTROYED`
+- removes message listeners
+
+## Production Checklist
+
+- Pin `allowedOrigin` to the exact expected origin.
+- Keep runtime messages generic and put business rules in your own named events and requests.
+- Document event names, payloads, and ownership between host and child teams.
+- Use `call()` only when the host truly depends on the child response.
+- Add runtime logging around `mount`, handshake, request start, request completion, and destroy.
+- Add browser tests for the actual iframe flows your product depends on.
+
+## Next Docs
+
+- [API reference](./api-reference.md)
+- [Lifecycle](./lifecycle.md)
+- [Events and RPC](./events-and-rpc.md)
+- [Protocol](./protocol.md)
+- [Examples](./examples.md)

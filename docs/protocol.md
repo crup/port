@@ -1,8 +1,8 @@
 # Protocol
 
-`@crup/port` treats iframe communication as an explicit protocol instead of a loose message bus.
+`@crup/port` treats iframe communication as an explicit protocol instead of a loose event bus. The runtime keeps the envelope small, the lifecycle strict, and the routing rules predictable.
 
-## Message Envelope
+## Envelope
 
 ```ts
 type PortMessage = {
@@ -17,49 +17,113 @@ type PortMessage = {
 };
 ```
 
-## Core Guarantees
+## Routing Guarantees
 
 - Messages are ignored unless `protocol` and `version` match.
-- Host accepts messages only from the mounted iframe window.
-- Host ignores messages from any origin other than `allowedOrigin`.
-- Child ignores messages until it has seen a valid `port:hello`.
-- `instanceId` prevents sibling embeds from cross-handling messages.
+- The host accepts messages only from the currently mounted iframe window.
+- The host ignores messages from any origin other than `allowedOrigin`.
+- The child ignores messages until it has observed a valid `port:hello`.
+- `instanceId` prevents sibling embeds from handling each other’s traffic.
+- `replyTo` ties responses and errors to a single outstanding request.
 
-## Lifecycle Messages
+## Message Kinds
 
-- `system / port:hello`: host starts the handshake
-- `system / port:ready`: child confirms readiness
-- `event / port:resize`: child proposes a new iframe height
+### `system`
 
-## Application Messages
+Reserved for runtime lifecycle behavior.
 
-- `event`: one-way notifications such as `widget:loaded`
-- `request`: host asks the child for a result
-- `response`: child resolves a previous request
-- `error`: child rejects a previous request
+- `port:hello`: host starts the handshake
+- `port:ready`: child confirms readiness
 
-## Example Request/Response
+### `event`
+
+One-way notifications that do not require a response.
+
+Examples:
+
+- `widget:loaded`
+- `demo:planChanged`
+- `demo:contextApplied`
+- `telemetry:tick`
+- `port:resize`
+
+### `request`
+
+Host asks the child for a concrete answer.
+
+Examples:
+
+- `system:ping`
+- `demo:getQuote`
+- `auth:getSession`
+- `checkout:getSnapshot`
+
+### `response`
+
+Child resolves a previous request. The runtime looks up the pending request by `replyTo`.
+
+### `error`
+
+Child rejects a previous request. The runtime converts the rejection into a `PortError` with code `MESSAGE_REJECTED`.
+
+## Handshake Sequence
+
+1. Host mounts the iframe and waits for the browser `load` event.
+2. Host sends `system / port:hello`.
+3. Child validates origin and stores `instanceId`.
+4. Child replies with `system / port:ready`.
+5. Host transitions to `ready`.
+6. Inline ports move immediately to `open`; modal ports wait for `open()`.
+
+## Request / Response Example
+
+Host:
 
 ```ts
-await port.call('system:ping', { requestedAt: Date.now() });
+const quote = await port.call('demo:getQuote', {
+  requestedAt: new Date().toISOString()
+});
 ```
 
+Child:
+
 ```ts
-child.on('request:system:ping', (message) => {
+child.on('request:demo:getQuote', (message) => {
   const request = message as { messageId: string };
 
   child.respond(request.messageId, {
-    ok: true
+    plan: 'Growth',
+    price: 249,
+    currency: 'USD'
   });
 });
 ```
 
+## Resize Flow
+
+The child proposes height changes through a normal event:
+
+```ts
+child.resize(document.documentElement.scrollHeight);
+```
+
+The host clamps the value using `minHeight` and `maxHeight` before applying it to the iframe element.
+
+## Contract Discipline
+
+The runtime only guarantees the envelope and routing. Your application should still define:
+
+- message ownership
+- payload shape
+- versioning expectations
+- validation rules
+- error payload semantics
+
 ## Versioning Guidance
 
-When you change message contracts in your application:
+When your own message contracts change:
 
 - keep payload validation at the application boundary
-- add capability negotiation if multiple child versions will coexist
-- treat protocol changes as breaking changes
-
-The library keeps the base envelope stable. Your domain messages still need their own discipline.
+- add capability negotiation if multiple child versions must coexist
+- treat incompatible payload changes as breaking changes
+- prefer additive message evolution before renaming or reusing an existing message type

@@ -3,148 +3,334 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Port Demo</title>
+    <title>Port Docs And Demo</title>
     <meta
       name="description"
-      content="Live GitHub Pages demo for @crup/port, a protocol-first iframe runtime for explicit host and child communication."
+      content="Interactive docs and live demo for @crup/port, the protocol-first iframe runtime for explicit host and child communication."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="page-shell">
       <header class="site-header">
-        <a class="brand" href="#top">Port</a>
-        <nav class="site-nav" aria-label="Primary">
-          <a href="#live-demo">Demo</a>
-          <a href="#protocol">Protocol</a>
-          <a href="https://github.com/crup/port">GitHub</a>
-        </nav>
+        <div class="site-header-shell">
+          <a class="brand" href="#top">
+            <span class="brand-mark">Port</span>
+            <span class="brand-text">
+              <span class="brand-copy">iframe protocol runtime</span>
+              <span class="brand-subtitle">Docs, demo lab, and embed contract reference</span>
+            </span>
+          </a>
+          <div class="site-nav-shell">
+            <nav class="site-nav" aria-label="Primary">
+              <a href="#live-lab">Live Lab</a>
+              <a href="#lifecycle">Lifecycle</a>
+              <a href="#recipes">Recipes</a>
+              <a href="#docs-directory">Docs</a>
+            </nav>
+            <a class="site-nav-cta" href="https://github.com/crup/port">GitHub</a>
+          </div>
+        </div>
       </header>
 
       <main id="top">
+        <div id="main-content"></div>
         <section class="hero">
           <div class="hero-copy" data-reveal>
             <p class="eyebrow">Protocol-first iframe runtime</p>
-            <h1>Embed remote apps without hand-rolled message glue.</h1>
+            <h1>Design the contract. Stop hand-wiring the window boundary.</h1>
             <p class="lede">
-              `@crup/port` gives the host lifecycle control, origin checks, request-response semantics,
-              and child-driven resize signals in a package small enough to stay out of the way.
+              `@crup/port` gives embedded apps a real boundary: explicit handshake, strict origin checks,
+              child-driven resize, event routing, and request-response semantics that stay readable under
+              production pressure.
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="#live-demo">See The Live Handshake</a>
-              <a class="button button-secondary" href="https://github.com/crup/port">Read The Source</a>
+              <a class="button button-primary" href="#live-lab">Open The Live Lab</a>
+              <a class="button button-secondary" href="https://www.npmjs.com/package/@crup/port">Install From npm</a>
             </div>
-            <div class="status-strip" aria-label="Runtime status">
+            <dl class="hero-facts">
               <div>
-                <span>State</span>
-                <strong id="state-value">idle</strong>
+                <dt>Host State</dt>
+                <dd id="state-value">idle</dd>
               </div>
               <div>
-                <span>Origin</span>
-                <strong id="origin-value">pending</strong>
+                <dt>Origin</dt>
+                <dd id="origin-value">pending</dd>
               </div>
               <div>
-                <span>Last RPC</span>
-                <strong id="rpc-value">none</strong>
+                <dt>Last RPC</dt>
+                <dd id="rpc-value">none</dd>
               </div>
-            </div>
+              <div>
+                <dt>Active Plan</dt>
+                <dd id="plan-value">none</dd>
+              </div>
+              <div>
+                <dt>Host Context</dt>
+                <dd id="context-value">standby</dd>
+              </div>
+              <div>
+                <dt>Child Events</dt>
+                <dd id="event-count">00</dd>
+              </div>
+            </dl>
           </div>
 
-          <div class="hero-visual" data-reveal>
-            <div class="visual-noise"></div>
-            <div class="visual-frame">
-              <div class="frame-topline">
-                <span>host</span>
+          <div class="hero-panel" data-reveal>
+            <div class="hero-code">
+              <div class="panel-topline">
+                <span>Host bootstrap</span>
                 <span>crup.port / v1</span>
               </div>
-              <div id="demo-root" class="demo-mount" aria-label="Live iframe demo"></div>
-              <div class="log-strip">
-                <p>Live event stream</p>
-                <ol id="event-log"></ol>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="live-demo" class="section" data-reveal>
-          <div class="section-head">
-            <p class="eyebrow">Live Demo</p>
-            <h2>One host, one child, one explicit protocol.</h2>
-          </div>
-          <div class="section-body prose-grid">
-            <div>
-              <p>
-                The host page mounts an iframe, waits for `load`, sends `port:hello`, and only then opens the
-                session for requests and events. The child accepts messages only after it sees a matching
-                origin and instance id.
-              </p>
-            </div>
-            <div>
               <pre><code>const port = createPort({
   url: childUrl,
   allowedOrigin: window.location.origin,
   target: '#demo-root',
-  mode: 'inline'
+  mode: 'inline',
+  minHeight: 360,
+  maxHeight: 620
 });
 
 await port.mount();
-await port.call('system:ping');</code></pre>
+await port.call('system:ping');
+port.send('demo:hostContext', {
+  workspace: 'Growth review'
+});</code></pre>
+            </div>
+            <div class="hero-principles">
+              <div>
+                <strong>Handshake before traffic</strong>
+                <p>The child stays quiet until `port:hello` and origin validation succeed.</p>
+              </div>
+              <div>
+                <strong>Events for telemetry</strong>
+                <p>Use `emit` and `send` for non-blocking UI and workflow signals.</p>
+              </div>
+              <div>
+                <strong>RPC for decisions</strong>
+                <p>Use `call` and `respond` when the host needs a concrete answer.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="protocol" class="section section-dark" data-reveal>
+        <section id="live-lab" class="section live-lab" data-reveal>
           <div class="section-head">
-            <p class="eyebrow">Protocol</p>
-            <h2>The envelope stays small. The guarantees stay strict.</h2>
+            <p class="eyebrow">Live Lab</p>
+            <h2>Inspect the host, the child, and the message flow in one place.</h2>
+            <p>
+              The controls below drive a real iframe session. Mount creates the session, ping exercises
+              request-response, quote asks the child for domain data, and context pushes a host-side event
+              into the embedded app.
+            </p>
           </div>
-          <div class="protocol-lines">
-            <div>
-              <span>1</span>
-              <p>`protocol` and `version` are validated before any routing happens.</p>
+
+          <div class="lab-grid">
+            <div class="control-panel">
+              <div class="panel-topline">
+                <span>Host controls</span>
+                <span>window boundary</span>
+              </div>
+              <div class="control-actions">
+                <button id="mount-button" class="control-button control-button-primary" type="button">Remount Session</button>
+                <button id="ping-button" class="control-button" type="button">Run Ping RPC</button>
+                <button id="quote-button" class="control-button" type="button">Request Quote</button>
+                <button id="context-button" class="control-button" type="button">Send Host Context</button>
+              </div>
+              <div class="inspection-grid">
+                <div>
+                  <span>Lifecycle</span>
+                  <strong>`mount()` -> handshake -> open</strong>
+                </div>
+                <div>
+                  <span>Request</span>
+                  <strong>`call('demo:getQuote')`</strong>
+                </div>
+                <div>
+                  <span>Host Event</span>
+                  <strong>`send('demo:hostContext')`</strong>
+                </div>
+                <div>
+                  <span>Child Event</span>
+                  <strong>`emit('demo:planChanged')`</strong>
+                </div>
+              </div>
+              <div class="log-strip">
+                <div class="log-header">
+                  <p>Event Timeline</p>
+                  <span>latest first</span>
+                </div>
+                <ol id="event-log" aria-live="polite"></ol>
+              </div>
             </div>
-            <div>
-              <span>2</span>
-              <p>Host messages are pinned to the mounted iframe window and the expected origin.</p>
-            </div>
-            <div>
-              <span>3</span>
-              <p>`instanceId` prevents sibling embeds from cross-handling each other.</p>
-            </div>
-            <div>
-              <span>4</span>
-              <p>Requests resolve through `replyTo` instead of ad hoc event naming.</p>
+
+            <div class="demo-stage">
+              <div class="panel-topline">
+                <span>Embedded child app</span>
+                <span>same-origin demo</span>
+              </div>
+              <div id="demo-root" class="demo-mount" aria-label="Live iframe demo"></div>
             </div>
           </div>
         </section>
 
-        <section class="section" data-reveal>
+        <section id="lifecycle" class="section" data-reveal>
           <div class="section-head">
-            <p class="eyebrow">OSS Surface</p>
-            <h2>Built like a public package, not a private snippet.</h2>
+            <p class="eyebrow">Lifecycle</p>
+            <h2>The runtime is small because the boundary is explicit.</h2>
+            <p>
+              `@crup/port` is opinionated about the moments that usually fail first in embedded products:
+              load timing, readiness, origin pinning, cleanup, and response correlation.
+            </p>
           </div>
-          <div class="section-body rails">
-            <div>
-              <h3>Docs</h3>
-              <p>README, security guidance, release notes, protocol notes, and local example references.</p>
-            </div>
-            <div>
-              <h3>Tooling</h3>
-              <p>Changesets, Husky, ESLint, bundle size reporting, and GitHub Actions for CI and Pages.</p>
-            </div>
-            <div>
-              <h3>Community</h3>
-              <p>Contributing guide, code of conduct, support path, issue templates, and PR template.</p>
-            </div>
+
+          <div class="step-grid">
+            <article>
+              <span>01</span>
+              <h3>Create</h3>
+              <p>Declare `url`, `allowedOrigin`, target, sizing bounds, and whether the surface is inline or modal.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <h3>Mount</h3>
+              <p>The host creates the iframe, waits for `load`, and rejects if the iframe never becomes usable.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <h3>Handshake</h3>
+              <p>The host sends `port:hello`; the child only responds with `port:ready` after origin validation succeeds.</p>
+            </article>
+            <article>
+              <span>04</span>
+              <h3>Open</h3>
+              <p>Inline ports become `open` after handshake; modal ports stay hidden until you call `open()` explicitly.</p>
+            </article>
+            <article>
+              <span>05</span>
+              <h3>Exchange</h3>
+              <p>Events move telemetry and UI signals. Requests and responses move data that needs a concrete result.</p>
+            </article>
+            <article>
+              <span>06</span>
+              <h3>Destroy</h3>
+              <p>Outstanding calls reject, listeners are removed, and the iframe surface is torn down cleanly.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section contract-section" data-reveal>
+          <div class="section-head">
+            <p class="eyebrow">Contract Design</p>
+            <h2>Separate message intent before your app logic gets noisy.</h2>
+          </div>
+          <div class="contract-grid">
+            <article>
+              <h3>System Messages</h3>
+              <p>`port:hello`, `port:ready`, and `port:resize` are reserved for runtime behavior.</p>
+            </article>
+            <article>
+              <h3>Domain Events</h3>
+              <p>Use one-way messages for telemetry, page changes, and UI acknowledgements such as `demo:planChanged`.</p>
+            </article>
+            <article>
+              <h3>RPC Requests</h3>
+              <p>Use request-response for operations that block the host on an answer, such as a quote, auth step, or snapshot.</p>
+            </article>
+            <article>
+              <h3>Error Paths</h3>
+              <p>Timeouts, invalid state, and origin mismatch are first-class failure conditions, not console folklore.</p>
+            </article>
+          </div>
+          <div class="code-grid">
+            <pre><code>port.on('demo:planChanged', (payload) => {
+  console.log('child selected', payload);
+});
+
+port.send('demo:hostContext', {
+  workspace: 'Ops review',
+  accent: 'amber'
+});</code></pre>
+            <pre><code>child.on('request:demo:getQuote', (message) => {
+  const request = message as { messageId: string };
+
+  child.respond(request.messageId, {
+    plan: 'Growth',
+    price: 249,
+    currency: 'USD'
+  });
+});</code></pre>
+          </div>
+        </section>
+
+        <section id="recipes" class="section" data-reveal>
+          <div class="section-head">
+            <p class="eyebrow">Recipes</p>
+            <h2>Start with a pattern instead of reverse-engineering the runtime.</h2>
+          </div>
+          <div class="recipe-grid">
+            <article>
+              <h3>Inline Embed</h3>
+              <p>Mount directly into a page region and let the child control height through `resize()` events.</p>
+              <a href="https://github.com/crup/port/blob/main/examples/host-inline.ts">Open example</a>
+            </article>
+            <article>
+              <h3>Modal Surface</h3>
+              <p>Keep the iframe mounted but hidden until the user opens the experience deliberately.</p>
+              <a href="https://github.com/crup/port/blob/main/examples/host-modal.ts">Open example</a>
+            </article>
+            <article>
+              <h3>Child Responder</h3>
+              <p>Handle `request:*` messages and reply with `respond(messageId, payload)` to avoid ad hoc reply channels.</p>
+              <a href="https://github.com/crup/port/blob/main/examples/child-basic.ts">Open example</a>
+            </article>
+            <article>
+              <h3>Event Catalog</h3>
+              <p>Document event names, payloads, and ownership so the host and child teams do not drift independently.</p>
+              <a href="https://github.com/crup/port/blob/main/docs/events-and-rpc.md">Read guide</a>
+            </article>
+          </div>
+        </section>
+
+        <section id="docs-directory" class="section docs-directory" data-reveal>
+          <div class="section-head">
+            <p class="eyebrow">Documentation</p>
+            <h2>GitHub docs for setup, protocol details, lifecycle, and integration patterns.</h2>
+          </div>
+          <div class="docs-grid">
+            <a href="https://github.com/crup/port/blob/main/README.md">
+              <strong>README</strong>
+              <p>Package overview, install commands, quick start, and doc links.</p>
+            </a>
+            <a href="https://github.com/crup/port/blob/main/docs/getting-started.md">
+              <strong>Getting Started</strong>
+              <p>Host setup, child setup, modal mode, cleanup, and production checklist.</p>
+            </a>
+            <a href="https://github.com/crup/port/blob/main/docs/api-reference.md">
+              <strong>API Reference</strong>
+              <p>Config options, methods, states, and error codes for both runtimes.</p>
+            </a>
+            <a href="https://github.com/crup/port/blob/main/docs/lifecycle.md">
+              <strong>Lifecycle</strong>
+              <p>State transitions, timing expectations, and what each phase guarantees.</p>
+            </a>
+            <a href="https://github.com/crup/port/blob/main/docs/events-and-rpc.md">
+              <strong>Events And RPC</strong>
+              <p>Message naming, payload patterns, request-response guidance, and event examples.</p>
+            </a>
+            <a href="https://github.com/crup/port/blob/main/docs/protocol.md">
+              <strong>Protocol</strong>
+              <p>Envelope shape, system messages, routing rules, and versioning guidance.</p>
+            </a>
           </div>
         </section>
 
         <section class="section final-cta" data-reveal>
           <p class="eyebrow">Next Step</p>
-          <h2>Ship the embed contract. Keep the app logic outside the runtime.</h2>
+          <h2>Keep the runtime generic. Put your product contract in named messages and documented payloads.</h2>
           <div class="hero-actions">
-            <a class="button button-primary" href="https://github.com/crup/port">Open GitHub</a>
-            <a class="button button-secondary" href="https://github.com/crup/port/blob/main/README.md">Read The README</a>
+            <a class="button button-primary" href="https://www.npmjs.com/package/@crup/port">Install `@crup/port`</a>
+            <a class="button button-secondary" href="https://github.com/crup/port/blob/main/docs/api-reference.md">Read The API</a>
           </div>
         </section>
       </main>
