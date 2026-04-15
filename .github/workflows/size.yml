@@ -18,12 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 1. Checkout head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: head
 
       - name: 2. Checkout main baseline
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
           path: base

@@ -49,7 +49,7 @@ jobs:
       current_latest: ${{ steps.guard.outputs.current_latest }}
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node 24
         uses: actions/setup-node@v4
@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -214,7 +214,7 @@ jobs:
       package_version: ${{ steps.version.outputs.package_version }}
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -265,7 +265,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create GitHub release
         env:
