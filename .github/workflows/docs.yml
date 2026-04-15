@@ -52,7 +52,7 @@ jobs:
 
       - name: 7. Configure GitHub Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: 8. Upload Pages artifact
         id: artifact
