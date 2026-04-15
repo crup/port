@@ -149,7 +149,7 @@ type PortMessage = {
 
 ## Demo And Examples
 
-- Live GitHub Pages demo: https://crup.github.io/port/
+- Live GitHub Pages docs and demo: https://crup.github.io/port/
 - Inline example: [`examples/host-inline.ts`](examples/host-inline.ts)
 - Modal example: [`examples/host-modal.ts`](examples/host-modal.ts)
 - Child example: [`examples/child-basic.ts`](examples/child-basic.ts)
@@ -158,7 +158,11 @@ type PortMessage = {
 ## Documentation
 
 - Getting started: [`docs/getting-started.md`](docs/getting-started.md)
+- API reference: [`docs/api-reference.md`](docs/api-reference.md)
+- Lifecycle guide: [`docs/lifecycle.md`](docs/lifecycle.md)
+- Events and RPC: [`docs/events-and-rpc.md`](docs/events-and-rpc.md)
 - Protocol notes: [`docs/protocol.md`](docs/protocol.md)
+- Example patterns: [`docs/examples.md`](docs/examples.md)
 - Security guidance: [`docs/security.md`](docs/security.md)
 - Release process: [`docs/releasing.md`](docs/releasing.md)
 - Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md)
