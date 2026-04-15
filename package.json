@@ -1,0 +1,40 @@
+{
+  "name": "@crup/port",
+  "version": "0.1.0",
+  "description": "Minimal protocol-first iframe runtime for host/child communication",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./child": {
+      "types": "./dist/child.d.ts",
+      "import": "./dist/child.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "examples": "echo \"Open examples/ for host/child integration snippets\""
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
