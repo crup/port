@@ -22,6 +22,9 @@ const planValue = document.querySelector<HTMLElement>('#child-plan');
 const priceValue = document.querySelector<HTMLElement>('#child-price');
 const focusValue = document.querySelector<HTMLElement>('#child-focus');
 const activityLog = document.querySelector<HTMLOListElement>('#child-activity');
+const resizeStateValue = document.querySelector<HTMLElement>('#resize-state');
+const resizeToggleButton = document.querySelector<HTMLButtonElement>('#resize-toggle');
+const resizePanel = document.querySelector<HTMLElement>('#resize-panel');
 const planButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-plan-button]'));
 
 if (
@@ -33,6 +36,9 @@ if (
   !priceValue ||
   !focusValue ||
   !activityLog ||
+  !resizeStateValue ||
+  !resizeToggleButton ||
+  !resizePanel ||
   planButtons.length === 0
 ) {
   throw new Error('Child demo is missing required elements');
@@ -46,6 +52,9 @@ const planNode = planValue;
 const priceNode = priceValue;
 const focusNode = focusValue;
 const activityNode = activityLog;
+const resizeStateNode = resizeStateValue;
+const resizeButton = resizeToggleButton;
+const resizePanelNode = resizePanel;
 
 const child = createChildPort({
   allowedOrigin: window.location.origin
@@ -53,6 +62,7 @@ const child = createChildPort({
 
 let selectedPlan: PlanKey = 'growth';
 let tickCount = 0;
+let isResizeExpanded = false;
 let currentContext: Required<DemoContext> = {
   workspace: 'Waiting for host context',
   accent: 'amber',
@@ -106,6 +116,13 @@ function emitPlanChange(): void {
   };
 
   child.emit('demo:planChanged', payload);
+}
+
+function syncResizeSurface(): void {
+  resizeStateNode.textContent = isResizeExpanded ? 'expanded' : 'compact';
+  resizeButton.textContent = isResizeExpanded ? 'Collapse resize content' : 'Expand resize content';
+  resizeButton.setAttribute('aria-expanded', String(isResizeExpanded));
+  resizePanelNode.hidden = !isResizeExpanded;
 }
 
 child.on('request:system:ping', (message: unknown) => {
@@ -163,10 +180,22 @@ for (const button of planButtons) {
   });
 }
 
+resizeButton.addEventListener('click', () => {
+  isResizeExpanded = !isResizeExpanded;
+  syncResizeSurface();
+  appendActivity(`resize demo ${isResizeExpanded ? 'expanded' : 'collapsed'}`);
+  child.emit('demo:resizeModeChanged', {
+    mode: isResizeExpanded ? 'expanded' : 'compact',
+    changedAt: new Date().toISOString()
+  });
+  syncHeight();
+});
+
 window.setTimeout(() => {
   originNode.textContent = window.location.origin;
   workspaceNode.textContent = currentContext.workspace;
   updatePlanSurface();
+  syncResizeSurface();
 
   child.emit('demo:ready', {
     child: 'pricing-widget',

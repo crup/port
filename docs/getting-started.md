@@ -136,6 +136,21 @@ child.resize(document.documentElement.scrollHeight);
 
 Call `resize()` whenever the embedded layout changes. The host clamps the received height between `minHeight` and `maxHeight`.
 
+For real apps, trigger it after meaningful layout changes instead of only once at startup:
+
+```ts
+function syncHeight() {
+  child.resize(document.documentElement.scrollHeight);
+}
+
+document.querySelector('#details-toggle')?.addEventListener('click', () => {
+  document.body.classList.toggle('details-open');
+  syncHeight();
+});
+```
+
+The live docs demo includes a dedicated resize panel so you can watch the iframe height change from the host side.
+
 ## Modal Mode
 
 Use modal mode when the iframe should stay mounted but hidden until a user action opens it.

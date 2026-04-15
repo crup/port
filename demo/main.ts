@@ -40,6 +40,7 @@ const rpcValue = document.querySelector<HTMLElement>('#rpc-value');
 const planValue = document.querySelector<HTMLElement>('#plan-value');
 const contextValue = document.querySelector<HTMLElement>('#context-value');
 const eventCountValue = document.querySelector<HTMLElement>('#event-count');
+const heightValue = document.querySelector<HTMLElement>('#height-value');
 const eventLog = document.querySelector<HTMLOListElement>('#event-log');
 const mountTarget = document.querySelector<HTMLElement>('#demo-root');
 const mountButton = document.querySelector<HTMLButtonElement>('#mount-button');
@@ -55,6 +56,7 @@ if (
   !planValue ||
   !contextValue ||
   !eventCountValue ||
+  !heightValue ||
   !eventLog ||
   !mountTarget ||
   !mountButton ||
@@ -71,6 +73,7 @@ const rpcNode = rpcValue;
 const planNode = planValue;
 const contextNode = contextValue;
 const eventCountNode = eventCountValue;
+const heightNode = heightValue;
 const logNode = eventLog;
 const mountNode = mountTarget;
 const remountButton = mountButton;
@@ -87,6 +90,7 @@ const contexts: DemoContext[] = [
 let port: DemoPort | null = null;
 let contextIndex = 0;
 let childEventCount = 0;
+let frameResizeObserver: ResizeObserver | null = null;
 
 for (const element of revealTargets) {
   element.classList.add('is-hidden');
@@ -154,6 +158,33 @@ function updateFromPlan(payload: Pick<QuoteResponse, 'plan' | 'price' | 'currenc
   planNode.textContent = `${payload.plan} · ${payload.currency} ${payload.price}${payload.cycle}`;
 }
 
+function disconnectFrameObserver(): void {
+  frameResizeObserver?.disconnect();
+  frameResizeObserver = null;
+}
+
+function observeFrameHeight(): void {
+  disconnectFrameObserver();
+
+  const frame = mountNode.querySelector('iframe');
+  if (!frame) {
+    heightNode.textContent = 'pending';
+    return;
+  }
+
+  const applyHeight = () => {
+    heightNode.textContent = frame.style.height || `${Math.round(frame.getBoundingClientRect().height)}px`;
+  };
+
+  applyHeight();
+
+  frameResizeObserver = new ResizeObserver(() => {
+    applyHeight();
+  });
+
+  frameResizeObserver.observe(frame);
+}
+
 function createDemoPort(): DemoPort {
   const childUrl = new URL('./child.html', window.location.href).toString();
 
@@ -198,6 +229,12 @@ function bindPort(nextPort: DemoPort): void {
     const context = payload as ContextAppliedPayload;
     contextNode.textContent = `${context.workspace} · ${context.focus}`;
     appendLog('child', 'demo:contextApplied', `${context.workspace} · ${context.accent}`);
+  });
+
+  nextPort.on('demo:resizeModeChanged', (payload: unknown) => {
+    incrementChildEvent();
+    const resize = payload as { mode: string };
+    appendLog('child', 'demo:resizeModeChanged', resize.mode);
   });
 }
 
@@ -265,12 +302,14 @@ async function mountSession(): Promise<void> {
   if (port) {
     port.destroy();
   }
+  disconnectFrameObserver();
 
   childEventCount = 0;
   eventCountNode.textContent = '00';
   rpcNode.textContent = 'none';
   planNode.textContent = 'loading';
   contextNode.textContent = 'standby';
+  heightNode.textContent = 'pending';
   mountNode.replaceChildren();
 
   const nextPort = createDemoPort();
@@ -283,6 +322,7 @@ async function mountSession(): Promise<void> {
 
   try {
     await nextPort.mount();
+    observeFrameHeight();
     setStateLabel(nextPort.getState());
     appendLog('system', 'state', nextPort.getState());
     setControlsDisabled(false);
