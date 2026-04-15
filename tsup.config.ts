@@ -5,15 +5,13 @@ export default defineConfig([
     entry: {
       index: 'src/index.ts'
     },
-    format: ['esm', 'iife'],
-    globalName: 'CrupPort',
+    format: ['esm'],
     splitting: false,
-    sourcemap: true,
     dts: true,
     clean: true,
-    outExtension({ format }) {
+    outExtension() {
       return {
-        js: format === 'esm' ? '.mjs' : '.global.js'
+        js: '.mjs'
       };
     }
   },
@@ -23,7 +21,6 @@ export default defineConfig([
     },
     format: ['esm'],
     splitting: false,
-    sourcemap: true,
     dts: true,
     clean: false,
     outExtension() {

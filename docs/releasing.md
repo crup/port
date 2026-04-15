@@ -14,7 +14,7 @@ This repository now has a release flow similar in shape to `crup/react-timer-hoo
 - `release.yml` is a manual workflow dispatch from `main`.
 - It uses a guarded release gate, a separate verify job, and a dedicated publish job.
 - `NPM_TOKEN` is passed directly to the publish step via `NODE_AUTH_TOKEN` and `NPM_TOKEN`.
-- After publish, the workflow creates a GitHub release tag and release notes.
+- After publish, the workflow commits the released `package.json` version back to `main`, then creates the GitHub release tag and notes from that release commit.
 
 Required secrets:
 

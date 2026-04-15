@@ -19,9 +19,10 @@
 
 ## Child Recommendations
 
-- Pass `allowedOrigin` to `createChildPort()` when the host origin is known.
+- Treat `createChildPort({ allowedOrigin })` as required policy, not an optional convenience.
 - Ignore application messages until the library handshake completes.
 - Keep responses narrow and typed.
+- Use `reject()` for transport-level failures instead of overloading success payloads.
 - Avoid emitting secrets through generic event channels.
 
 ## Timeout Strategy

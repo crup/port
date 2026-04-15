@@ -212,9 +212,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       package_version: ${{ steps.version.outputs.package_version }}
+      release_target: ${{ steps.persist.outputs.release_target }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
+        with:
+          ref: main
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -259,6 +262,24 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Persist released version to main
+        id: persist
+        env:
+          STABLE_VERSION: ${{ needs.guard.outputs.stable_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- package.json; then
+            echo "release_target=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git add package.json
+          git commit -m "chore(release): v$STABLE_VERSION"
+          git push origin HEAD:main
+          echo "release_target=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   github-release:
     name: 4. Create GitHub release
     needs: [guard, publish]
@@ -266,6 +287,8 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
+        with:
+          ref: main
 
       - name: Create GitHub release
         env:
@@ -288,7 +311,7 @@ jobs:
           gh release create "v$STABLE_VERSION" \
             --title "v$STABLE_VERSION" \
             --notes-file release-notes.md \
-            --target "${{ github.sha }}"
+            --target "${{ needs.publish.outputs.release_target }}"
 
       - name: Release summary
         run: |

@@ -2,13 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/%40crup%2Fport?color=1f8b4c)](https://www.npmjs.com/package/@crup/port)
 [![npm downloads](https://img.shields.io/npm/dm/%40crup%2Fport?color=0b7285)](https://www.npmjs.com/package/@crup/port)
+[![bundle size](https://deno.bundlejs.com/badge?q=%40crup%2Fport)](https://bundlejs.com/?q=%40crup%2Fport)
 [![License](https://img.shields.io/github/license/crup/port?color=495057)](https://github.com/crup/port/blob/main/LICENSE)
 [![CI](https://github.com/crup/port/actions/workflows/ci.yml/badge.svg)](https://github.com/crup/port/actions/workflows/ci.yml)
 [![Docs](https://github.com/crup/port/actions/workflows/docs.yml/badge.svg)](https://github.com/crup/port/actions/workflows/docs.yml)
 
 Protocol-first iframe runtime for explicit host/child communication.
 
-`@crup/port` exists for the part of embedded app work that usually rots first: lifecycle, handshake timing, and message discipline. It gives the host page a small runtime for mounting an iframe, opening it inline or in a modal, enforcing origin checks, and exchanging request/response messages without ad hoc `postMessage` glue.
+`@crup/port` exists for the part of embedded app work that usually rots first: lifecycle, handshake timing, and message discipline. It gives the host page a small runtime for mounting an iframe, opening it inline or in a modal, pinning exact origins, and exchanging request/response/error messages without ad hoc `postMessage` glue.
 
 Package: https://www.npmjs.com/package/@crup/port
 
@@ -85,6 +86,11 @@ const child = createChildPort({
 child.on('request:system:ping', (message) => {
   const request = message as { messageId: string; payload?: unknown };
 
+  if (!request.payload) {
+    child.reject(request.messageId, 'missing ping payload');
+    return;
+  }
+
   child.respond(request.messageId, {
     ok: true,
     receivedAt: Date.now()
@@ -98,11 +104,11 @@ child.resize(document.body.scrollHeight);
 ## What You Get
 
 - Explicit lifecycle: `idle -> mounting -> mounted -> handshaking -> ready -> open -> closed -> destroyed`
-- Strict origin pinning on both host and child
+- Explicit origin pinning on both host and child
 - Inline and modal host modes
-- Event emission plus request/response RPC
+- Event emission plus request/response/error RPC
 - Child-driven height updates
-- Small ESM-first bundle built with `tsup`
+- Small ESM-only bundle built with `tsup`
 
 ## API Surface
 
@@ -121,7 +127,7 @@ Host runtime with:
 - `update(partialConfig)`
 - `getState()`
 
-### `createChildPort(config?)`
+### `createChildPort(config)`
 
 Child runtime with:
 
@@ -129,6 +135,7 @@ Child runtime with:
 - `emit(type, payload?)`
 - `on(type, handler)`
 - `respond(messageId, payload)`
+- `reject(messageId, payload?)`
 - `resize(height)`
 - `destroy()`
 
@@ -167,6 +174,17 @@ type PortMessage = {
 - Release process: [`docs/releasing.md`](docs/releasing.md)
 - Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
+## Positioning
+
+`@crup/port` stays intentionally narrow:
+
+- it is a protocol runtime for iframe lifecycle, handshake, resize, and correlated messaging
+- it is not a framework adapter layer for React, Vue, or Web Components
+- it is not a generic method bridge that reaches into arbitrary child code
+- it is not an automatic DOM sync system beyond explicit child-driven `resize()`
+
+That scope is what keeps the package small and predictable.
+
 ## Local Development
 
 ```bash
@@ -189,12 +207,12 @@ Useful scripts:
 
 - `ci.yml` validates lint, types, tests, package build, demo build, README checks, size output, and package packing.
 - `docs.yml` deploys the Vite demo to GitHub Pages at `https://crup.github.io/port/`.
-- `release.yml` is a guarded manual stable release workflow modeled on `crup/react-timer-hook`.
+- `release.yml` is a guarded manual stable release workflow modeled on `crup/react-timer-hook`, and it persists the published version back to `main`.
 - `prerelease.yml` publishes a manual alpha prerelease from the `next` branch.
 
 ## Security
 
-This package helps with origin checks, but it cannot secure a weak embed strategy on its own. Always pin `allowedOrigin`, set restrictive iframe attributes, and validate application-level payloads. The practical guidance lives in [`docs/security.md`](docs/security.md).
+This package helps enforce the runtime boundary, but it cannot secure a weak embed strategy on its own. Always pin `allowedOrigin`, set restrictive iframe attributes, and validate application-level payloads. The practical guidance lives in [`docs/security.md`](docs/security.md).
 
 ## OSS Baseline
 

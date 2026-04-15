@@ -1,6 +1,6 @@
 {
   "name": "@crup/port",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A lightweight protocol-first iframe runtime for building secure host/child embeds with explicit lifecycle and messaging.",
   "homepage": "https://crup.github.io/port/",
   "repository": {
@@ -44,6 +44,8 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
+    "!dist/**/*.global.js",
     "README.md",
     "LICENSE"
   ],

@@ -125,6 +125,8 @@ Look at:
 - `allowedOrigin` mismatch
 - `handshakeTimeoutMs` too low for the actual child startup path
 
+Failed `mount()` calls now clean up the iframe and reset the runtime to `idle`, so a corrected retry can mount again without creating a poisoned instance.
+
 ### Host calls too early
 
 `send()` and `call()` require the runtime to be `ready`, `open`, or `closed`. Calling them earlier throws `INVALID_STATE`.

@@ -54,7 +54,7 @@ const child = createChildPort({
 });
 ```
 
-The child stays idle until it receives a valid `port:hello` message. Once origin validation succeeds, it replies with `port:ready` automatically.
+The child stays idle until it receives a valid `port:hello` message from the exact configured `allowedOrigin`. Once origin validation succeeds, it replies with `port:ready` automatically.
 
 ## First Working Flow
 
@@ -99,6 +99,11 @@ const quote = await port.call<{
 ```ts
 child.on('request:demo:getQuote', (message) => {
   const request = message as { messageId: string };
+
+  if (!document.body.dataset.quoteReady) {
+    child.reject(request.messageId, 'Quote engine is not ready yet');
+    return;
+  }
 
   child.respond(request.messageId, {
     plan: 'Growth',
@@ -165,15 +170,18 @@ Destroying the port:
 
 - removes the iframe
 - clears pending RPC requests
+- clears pending handshake state
 - rejects outstanding calls with `PORT_DESTROYED`
 - removes message listeners
 
 ## Production Checklist
 
 - Pin `allowedOrigin` to the exact expected origin.
+- Treat `createChildPort({ allowedOrigin })` as required security config, not optional convenience.
 - Keep runtime messages generic and put business rules in your own named events and requests.
 - Document event names, payloads, and ownership between host and child teams.
 - Use `call()` only when the host truly depends on the child response.
+- Use `reject()` when the child cannot satisfy a host request and the host should handle a real failure path.
 - Add runtime logging around `mount`, handshake, request start, request completion, and destroy.
 - Add browser tests for the actual iframe flows your product depends on.
 

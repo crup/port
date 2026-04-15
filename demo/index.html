@@ -41,8 +41,8 @@
             <p class="eyebrow">Protocol-first iframe runtime</p>
             <h1>Design the contract. Stop hand-wiring the window boundary.</h1>
             <p class="lede">
-              `@crup/port` gives embedded apps a real boundary: explicit handshake, strict origin checks,
-              child-driven resize, event routing, and request-response semantics that stay readable under
+              `@crup/port` gives embedded apps a real boundary: explicit handshake, exact origin pinning,
+              child-driven resize, event routing, and request-response-error semantics that stay readable under
               production pressure.
             </p>
             <div class="hero-actions">
@@ -101,7 +101,7 @@ port.send('demo:hostContext', {
             <div class="hero-principles">
               <div>
                 <strong>Handshake before traffic</strong>
-                <p>The child stays quiet until `port:hello` and origin validation succeed.</p>
+                <p>The child stays quiet until `port:hello` arrives from the configured exact origin.</p>
               </div>
               <div>
                 <strong>Events for telemetry</strong>
@@ -109,7 +109,7 @@ port.send('demo:hostContext', {
               </div>
               <div>
                 <strong>RPC for decisions</strong>
-                <p>Use `call` and `respond` when the host needs a concrete answer.</p>
+                <p>Use `call`, `respond`, and `reject` when the host needs a concrete answer or a real failure.</p>
               </div>
             </div>
           </div>
@@ -281,7 +281,7 @@ port.send('demo:hostContext', {
             </article>
             <article>
               <h3>Child Responder</h3>
-              <p>Handle `request:*` messages and reply with `respond(messageId, payload)` to avoid ad hoc reply channels.</p>
+              <p>Handle `request:*` messages with `respond(messageId, payload)` or `reject(messageId, payload)` instead of ad hoc reply channels.</p>
               <a href="https://github.com/crup/port/blob/main/examples/child-basic.ts">Open example</a>
             </article>
             <article>

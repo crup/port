@@ -46,5 +46,5 @@ export interface PortConfig {
 export type EventHandler<T = unknown> = (payload: T) => void | Promise<void>;
 
 export interface ChildPortConfig {
-  allowedOrigin?: string;
+  allowedOrigin: string;
 }
