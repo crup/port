@@ -1,7 +1,7 @@
 {
   "name": "@crup/port",
   "version": "0.1.0",
-  "description": "Protocol-first iframe runtime for explicit host/child communication",
+  "description": "A lightweight protocol-first iframe runtime for building secure host/child embeds with explicit lifecycle and messaging.",
   "homepage": "https://crup.github.io/port/",
   "repository": {
     "type": "git",
@@ -10,13 +10,18 @@
   "bugs": {
     "url": "https://github.com/crup/port/issues"
   },
-  "author": "CRUP contributors",
+  "author": "Rajender Joshi <connect@rajender.pro>",
   "keywords": [
     "iframe",
+    "iframe-runtime",
     "postmessage",
     "embed",
     "protocol",
     "messaging",
+    "rpc",
+    "cross-origin",
+    "widget",
+    "sdk",
     "typescript",
     "browser",
     "runtime"
