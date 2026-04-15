@@ -10,8 +10,6 @@ Protocol-first iframe runtime for explicit host/child communication.
 
 `@crup/port` exists for the part of embedded app work that usually rots first: lifecycle, handshake timing, and message discipline. It gives the host page a small runtime for mounting an iframe, opening it inline or in a modal, enforcing origin checks, and exchanging request/response messages without ad hoc `postMessage` glue.
 
-Tags: `iframe` `postMessage` `embed` `protocol` `TypeScript` `runtime`
-
 Package: https://www.npmjs.com/package/@crup/port
 
 Live demo: https://crup.github.io/port/
