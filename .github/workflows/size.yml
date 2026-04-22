@@ -69,7 +69,7 @@ jobs:
 
       - name: 8. Comment size report
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('node:fs');
